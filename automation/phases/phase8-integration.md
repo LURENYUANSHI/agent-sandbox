@@ -1,5 +1,17 @@
 You are working on the AgentSandbox project in /c/Users/Administrator/ai-sandbox.
 
+## Repository Info
+- **GitHub Repo**: https://github.com/LURENYUANSHI/agent-sandbox
+- **Remote**: origin → LURENYUANSHI/agent-sandbox
+- **Branch Strategy**: main (production) + develop (integration), all work on feature branches from develop
+- **Current working directory**: /c/Users/Administrator/ai-sandbox
+- **Feishu notifications**: bash automation/feishu-notify.sh "<event>" "<title>" "<detail>"
+- **DO NOT push to remote, DO NOT create PRs, DO NOT create issues.** The orchestrator handles all git remote operations.
+- Only make local git commits. The orchestrator will push, create PRs, and merge.
+- After completing your work, send a Feishu notification: bash automation/feishu-notify.sh "phase_complete" "Phase N completed" "description"
+
+
+
 Read CLAUDE.md and docs/development-plan.md. Read existing code to understand what's been built.
 
 ## Your Task: Phase 8 - Integration Tests & Docker

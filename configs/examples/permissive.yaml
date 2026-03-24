@@ -1,0 +1,5 @@
+# Permissive security policy - allows most operations
+name: permissive
+description: Permissive policy for trusted agents
+
+rules: []

@@ -108,5 +108,37 @@ ai-sandbox/
 - Tests: Table-driven tests in Go, minimum 80% coverage for core packages
 - Commits: Conventional commits format
 
+## GitHub Repository
+- **Repo**: https://github.com/LURENYUANSHI/agent-sandbox
+- **Branches**: `main` (production), `develop` (integration)
+- **All PRs target `develop`**, never merge directly to `main`
+
+## Git Commit Rules
+
+Conventional commits format, no Co-Authored-By or attribution lines:
+
+```
+type(scope): description
+```
+
+Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore
+Scopes: sandbox, policy, trace, executor, api, cli, web, docker
+
+## Feishu Notifications
+
+Send notifications for key events using:
+```bash
+bash automation/feishu-notify.sh "<event_type>" "<title>" "<detail>"
+```
+
+## Available Skills
+
+<skill>
+<name>git-workflow</name>
+<description>Git workflow automation for GitHub operations including commits, pull requests, issue management with labels, branch management, and conflict resolution.</description>
+<trigger-keywords>issue management, commit, push, pull request, PR, merge conflict, branch, git, github</trigger-keywords>
+<location>project</location>
+</skill>
+
 ## Development Phases
 See `docs/development-plan.md` for the 8-hour overnight development plan.

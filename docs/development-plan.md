@@ -9,7 +9,7 @@
 
 ### Tasks:
 - Initialize git repo
-- Create go.mod with module name `github.com/anthropics/agent-sandbox`
+- Create go.mod with module name `github.com/LURENYUANSHI/agent-sandbox`
 - Create all directory structure from CLAUDE.md
 - Set up Makefile with build/test/lint targets
 - Create LICENSE (Apache 2.0)

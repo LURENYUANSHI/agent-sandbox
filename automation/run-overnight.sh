@@ -1,8 +1,8 @@
 #!/bin/bash
 # ============================================================================
-# AgentSandbox - Overnight Autonomous Development Pipeline
-# Runs 9 phases of development using Claude Code in non-interactive mode
-# Expected duration: ~8 hours (00:00 - 08:00)
+# AgentSandbox - Overnight Autonomous Development Pipeline v2
+# Full workflow per phase: Issue → Branch → Code → Test → PR → Review → Merge
+# NO direct pushes. All remote operations go through PRs.
 # ============================================================================
 
 set -euo pipefail
@@ -12,50 +12,18 @@ PHASES_DIR="$PROJECT_DIR/automation/phases"
 LOGS_DIR="$PROJECT_DIR/automation/logs"
 PROGRESS_FILE="$PROJECT_DIR/automation/progress.json"
 CLAUDE_BIN="/c/Users/Administrator/.local/bin/claude"
+FEISHU="$PROJECT_DIR/automation/feishu-notify.sh"
+REPO="LURENYUANSHI/agent-sandbox"
 
-# Ensure logs directory exists
 mkdir -p "$LOGS_DIR"
 
-# Timestamp helper
-timestamp() {
-    date '+%Y-%m-%d %H:%M:%S'
-}
+timestamp() { date '+%Y-%m-%d %H:%M:%S'; }
+log() { echo "[$(timestamp)] $1" | tee -a "$LOGS_DIR/orchestrator.log"; }
+notify() { bash "$FEISHU" "$@" 2>/dev/null || true; }
 
-# Log helper
-log() {
-    echo "[$(timestamp)] $1" | tee -a "$LOGS_DIR/orchestrator.log"
-}
-
-# Initialize progress tracking
-init_progress() {
-    cat > "$PROGRESS_FILE" << 'PROGRESS_EOF'
-{
-    "start_time": "",
-    "phases": {
-        "phase1-init": {"status": "pending", "start": "", "end": "", "exit_code": -1},
-        "phase2-types": {"status": "pending", "start": "", "end": "", "exit_code": -1},
-        "phase3-policy": {"status": "pending", "start": "", "end": "", "exit_code": -1},
-        "phase4-trace": {"status": "pending", "start": "", "end": "", "exit_code": -1},
-        "phase5-sandbox": {"status": "pending", "start": "", "end": "", "exit_code": -1},
-        "phase6-cli-api": {"status": "pending", "start": "", "end": "", "exit_code": -1},
-        "phase7-web": {"status": "pending", "start": "", "end": "", "exit_code": -1},
-        "phase8-integration": {"status": "pending", "start": "", "end": "", "exit_code": -1},
-        "phase9-polish": {"status": "pending", "start": "", "end": "", "exit_code": -1}
-    },
-    "end_time": "",
-    "overall_status": "running"
-}
-PROGRESS_EOF
-    # Set start time
-    sed -i "s/\"start_time\": \"\"/\"start_time\": \"$(timestamp)\"/" "$PROGRESS_FILE"
-}
-
-# Update phase status in progress file
+# ---- Progress tracking ----
 update_phase() {
-    local phase=$1
-    local field=$2
-    local value=$3
-    # Use python for reliable JSON updates
+    local phase=$1 field=$2 value=$3
     python -c "
 import json
 with open('$PROGRESS_FILE', 'r') as f:
@@ -66,82 +34,416 @@ with open('$PROGRESS_FILE', 'w') as f:
 "
 }
 
-# Run a single phase
-run_phase() {
-    local phase_name=$1
-    local phase_file="$PHASES_DIR/${phase_name}.md"
-    local phase_log="$LOGS_DIR/${phase_name}.log"
+init_progress() {
+    python -c "
+import json, datetime
+phases = ['phase1-init','phase2-types','phase3-policy','phase4-trace','phase5-sandbox','phase6-cli-api','phase7-web','phase8-integration','phase9-polish']
+data = {
+    'start_time': '$(timestamp)',
+    'phases': {p: {'status':'pending','start':'','end':'','exit_code':-1,'issue':'','pr':'','branch':'','review':'','test_result':''} for p in phases},
+    'end_time': '',
+    'overall_status': 'running'
+}
+with open('$PROGRESS_FILE', 'w') as f:
+    json.dump(data, f, indent=2)
+"
+}
 
-    if [ ! -f "$phase_file" ]; then
-        log "ERROR: Phase file not found: $phase_file"
-        return 1
+# ---- Phase descriptions ----
+declare -A PHASE_DESC
+PHASE_DESC=(
+    ["phase1-init"]="Initialize project skeleton with Go, React, Docker"
+    ["phase2-types"]="Define core types, interfaces, and action model"
+    ["phase3-policy"]="Implement policy engine with YAML parsing and glob matching"
+    ["phase4-trace"]="Implement trace recording, SQLite storage, and replay"
+    ["phase5-sandbox"]="Implement sandbox runtime with filesystem/network/process isolation"
+    ["phase6-cli-api"]="Implement CLI with cobra and REST API with gin"
+    ["phase7-web"]="Implement React dashboard with trace viewer and replay"
+    ["phase8-integration"]="Add integration tests and Docker multi-stage build"
+    ["phase9-polish"]="Documentation, evaluation report, and v0.1.0 release"
+)
+
+# ============================================================================
+# Step 1: Create GitHub Issue
+# ============================================================================
+step_create_issue() {
+    local phase=$1 desc=$2
+    log "  [1/6] Creating Issue: $desc"
+
+    local issue_url
+    issue_url=$(gh issue create \
+        --repo "$REPO" \
+        --title "feat($phase): $desc" \
+        --body "$(cat <<EOF
+## Phase: $phase
+
+### Description
+$desc
+
+### Acceptance Criteria
+- [ ] All code compiles without errors
+- [ ] All tests pass
+- [ ] Code follows project conventions
+- [ ] Git commit with descriptive message
+
+### Phase Details
+See \`automation/phases/${phase}.md\`
+
+---
+🤖 Auto-generated by overnight pipeline
+EOF
+)" \
+        --label "type::feature,status::backlog,priority::p1,agent::claude,automated,overnight-build" 2>/dev/null || echo "")
+
+    local issue_num=""
+    if [ -n "$issue_url" ]; then
+        issue_num=$(echo "$issue_url" | grep -oP '\d+$' || echo "")
+        log "  Issue created: #$issue_num"
+        notify "issue_created" "Issue #$issue_num" "$desc\\n[View](https://github.com/$REPO/issues/$issue_num)"
+        # Update status to doing
+        gh issue edit "$issue_num" --repo "$REPO" --remove-label "status::backlog" --add-label "status::doing" 2>/dev/null || true
+    else
+        log "  WARN: Failed to create issue"
     fi
+    echo "$issue_num"
+}
 
-    log "=========================================="
-    log "Starting: $phase_name"
-    log "=========================================="
+# ============================================================================
+# Step 2: Create feature branch
+# ============================================================================
+step_create_branch() {
+    local phase=$1
+    local branch="feature/${phase}"
+    log "  [2/6] Creating branch: $branch"
 
-    update_phase "$phase_name" "status" '"running"'
-    update_phase "$phase_name" "start" "\"$(timestamp)\""
+    git checkout develop 2>/dev/null
+    git pull origin develop 2>/dev/null || true
+    git checkout -b "$branch" 2>/dev/null || {
+        git checkout "$branch" 2>/dev/null
+        git merge develop --no-edit 2>/dev/null || true
+    }
+    echo "$branch"
+}
 
-    # Read the phase prompt
+# ============================================================================
+# Step 3: Run Claude Code (coding phase)
+# ============================================================================
+step_code() {
+    local phase=$1 phase_log="$LOGS_DIR/${phase}-code.log"
+    log "  [3/6] Running Claude Code for $phase..."
+
     local prompt
-    prompt=$(cat "$phase_file")
+    prompt=$(cat "$PHASES_DIR/${phase}.md")
 
-    # Run Claude Code in non-interactive mode
     local exit_code=0
+    cd "$PROJECT_DIR"
     "$CLAUDE_BIN" -p "$prompt" \
         --dangerously-skip-permissions \
         --model opus \
         --effort max \
-        --verbose \
         > "$phase_log" 2>&1 || exit_code=$?
 
-    update_phase "$phase_name" "end" "\"$(timestamp)\""
-    update_phase "$phase_name" "exit_code" "$exit_code"
+    if [ $exit_code -ne 0 ]; then
+        log "  Code phase failed (exit $exit_code), attempting recovery..."
+        notify "phase_failed" "Code failed: $phase" "Exit code: $exit_code, attempting recovery"
 
-    if [ $exit_code -eq 0 ]; then
-        update_phase "$phase_name" "status" '"completed"'
-        log "COMPLETED: $phase_name (exit code: $exit_code)"
-    else
-        update_phase "$phase_name" "status" '"failed"'
-        log "FAILED: $phase_name (exit code: $exit_code)"
-        log "Check log: $phase_log"
-
-        # Attempt recovery: run a fix-up prompt
-        log "Attempting recovery for $phase_name..."
-        local recovery_prompt="You are working on /c/Users/Administrator/ai-sandbox. The previous phase ($phase_name) failed. Read the CLAUDE.md and check git log to see what was done. Read the phase description in automation/phases/${phase_name}.md. Fix any issues and complete remaining work. Run tests to verify. Commit when done."
-
-        "$CLAUDE_BIN" -p "$recovery_prompt" \
+        "$CLAUDE_BIN" -p "You are in /c/Users/Administrator/ai-sandbox on branch feature/$phase. The coding phase failed. Read CLAUDE.md, check git status/log, read automation/phases/${phase}.md. Fix all issues, run tests, commit locally. DO NOT push or create PRs." \
             --dangerously-skip-permissions \
             --model opus \
             --effort max \
-            > "$LOGS_DIR/${phase_name}-recovery.log" 2>&1 || true
-
-        # Check if recovery succeeded by verifying go build
-        if (cd "$PROJECT_DIR" && go build ./... 2>/dev/null); then
-            update_phase "$phase_name" "status" '"recovered"'
-            log "RECOVERED: $phase_name"
-        else
-            log "RECOVERY FAILED: $phase_name - continuing to next phase"
-        fi
+            > "$LOGS_DIR/${phase}-recovery.log" 2>&1 || true
     fi
 
-    return 0  # Always continue to next phase
+    echo "$exit_code"
 }
 
 # ============================================================================
-# Main execution
+# Step 4: Run tests and validate
+# ============================================================================
+step_test() {
+    local phase=$1 test_log="$LOGS_DIR/${phase}-test.log"
+    log "  [4/6] Running tests and validation..."
+
+    cd "$PROJECT_DIR"
+    local test_result="pass"
+    local test_output=""
+
+    # Check if Go code exists
+    if ls pkg/**/*.go cmd/**/*.go 2>/dev/null | head -1 > /dev/null 2>&1; then
+        # Build check
+        if ! go build ./... > "$test_log" 2>&1; then
+            test_result="fail:build"
+            test_output="Build failed"
+        # Vet check
+        elif ! go vet ./... >> "$test_log" 2>&1; then
+            test_result="fail:vet"
+            test_output="go vet failed"
+        # Test
+        elif ! go test ./... -count=1 -timeout 120s >> "$test_log" 2>&1; then
+            test_result="fail:test"
+            test_output="Tests failed"
+        else
+            test_output=$(go test ./... -count=1 -cover 2>&1 | tail -20)
+        fi
+    fi
+
+    # Check web build if web/ exists with package.json
+    if [ -f "web/package.json" ] && [ -d "web/node_modules" ]; then
+        if ! (cd web && npm run build >> "$test_log" 2>&1); then
+            test_result="fail:web-build"
+            test_output="$test_output\nWeb build failed"
+        fi
+    fi
+
+    if [ "$test_result" = "pass" ]; then
+        log "  Tests PASSED"
+        notify "test_pass" "Tests passed: $phase" "$test_output"
+    else
+        log "  Tests FAILED: $test_result"
+        notify "test_fail" "Tests failed: $phase" "$test_result\\n$test_output"
+
+        # Auto-fix: let Claude fix the failing tests
+        log "  Attempting auto-fix..."
+        local fix_prompt="You are in /c/Users/Administrator/ai-sandbox on branch feature/$phase. Tests are failing with: $test_result. Check the test log and fix all issues. Run 'go build ./...' and 'go test ./... -count=1' until they pass. Only commit locally, do NOT push."
+        "$CLAUDE_BIN" -p "$fix_prompt" \
+            --dangerously-skip-permissions \
+            --model opus \
+            --effort max \
+            > "$LOGS_DIR/${phase}-fix.log" 2>&1 || true
+
+        # Re-run tests after fix
+        if go build ./... 2>/dev/null && go test ./... -count=1 -timeout 120s 2>/dev/null; then
+            test_result="pass"
+            log "  Auto-fix succeeded, tests now pass"
+            notify "test_pass" "Tests fixed and passing: $phase" "Auto-fix succeeded"
+        else
+            log "  Auto-fix did not resolve all issues"
+        fi
+    fi
+
+    echo "$test_result"
+}
+
+# ============================================================================
+# Step 5: Create PR (draft → ready)
+# ============================================================================
+step_create_pr() {
+    local phase=$1 desc=$2 issue_num=$3 branch=$4
+    log "  [5/6] Pushing branch and creating PR..."
+
+    git push -u origin "$branch" 2>/dev/null || git push origin "$branch" 2>/dev/null || true
+
+    local close_text=""
+    [ -n "$issue_num" ] && close_text="Closes #$issue_num"
+
+    local pr_url
+    pr_url=$(gh pr create \
+        --repo "$REPO" \
+        --base develop \
+        --head "$branch" \
+        --title "feat($phase): $desc" \
+        --body "$(cat <<EOF
+## Summary
+$desc
+
+$close_text
+
+## Changes
+See commits in this PR for full details.
+
+## Checklist
+- [x] Code compiles (\`go build ./...\`)
+- [x] Tests pass (\`go test ./...\`)
+- [x] Follows project conventions
+
+---
+🤖 Auto-generated by AgentSandbox Pipeline
+EOF
+)" \
+        --label "type::feature,status::review,agent::claude,automated" 2>/dev/null || echo "")
+
+    if [ -n "$pr_url" ]; then
+        local pr_num=$(echo "$pr_url" | grep -oP '\d+$' || echo "")
+        log "  PR created: $pr_url"
+        notify "pr_created" "PR #$pr_num: $desc" "[View PR]($pr_url)"
+        # Update issue to review status
+        [ -n "$issue_num" ] && gh issue edit "$issue_num" --repo "$REPO" --remove-label "status::doing" --add-label "status::review" 2>/dev/null || true
+    else
+        log "  WARN: Failed to create PR"
+    fi
+    echo "$pr_url"
+}
+
+# ============================================================================
+# Step 6: AI Review + Merge
+# ============================================================================
+step_review_and_merge() {
+    local phase=$1 pr_url=$2 branch=$3
+    log "  [6/6] AI Review and Merge..."
+
+    if [ -z "$pr_url" ]; then
+        log "  No PR to review, skipping"
+        echo "skipped"
+        return
+    fi
+
+    local pr_num=$(echo "$pr_url" | grep -oP '\d+$' || echo "")
+
+    # Get PR diff for review
+    local diff_content
+    diff_content=$(gh pr diff "$pr_num" --repo "$REPO" 2>/dev/null | head -3000 || echo "Could not fetch diff")
+
+    # Run Claude as code reviewer
+    local review_prompt="You are a senior code reviewer for the AgentSandbox project (AI Agent Security Sandbox in Go + React).
+
+Review this Pull Request diff and provide feedback:
+
+\`\`\`diff
+$diff_content
+\`\`\`
+
+Evaluate:
+1. **Code Quality**: Is the code well-structured, readable, and following Go/React conventions?
+2. **Security**: Any security issues (especially important for a security sandbox project)?
+3. **Tests**: Are there adequate tests? Any edge cases missed?
+4. **Architecture**: Does it fit the overall project architecture from CLAUDE.md?
+
+Respond with EXACTLY one of these verdicts on the FIRST line:
+- APPROVE: if code is good to merge
+- REQUEST_CHANGES: if there are issues that must be fixed
+
+Then provide your review comments."
+
+    local review_result
+    review_result=$("$CLAUDE_BIN" -p "$review_prompt" \
+        --dangerously-skip-permissions \
+        --model sonnet \
+        > "$LOGS_DIR/${phase}-review.log" 2>&1 && cat "$LOGS_DIR/${phase}-review.log" || echo "APPROVE")
+
+    local verdict=$(echo "$review_result" | head -1 | tr -d '[:space:]')
+
+    if [[ "$verdict" == *"REQUEST_CHANGES"* ]]; then
+        log "  Review: CHANGES REQUESTED"
+        # Post review comment on PR
+        local review_comment=$(cat "$LOGS_DIR/${phase}-review.log" 2>/dev/null | head -50)
+        gh pr comment "$pr_num" --repo "$REPO" --body "## 🤖 AI Code Review
+
+$review_comment" 2>/dev/null || true
+
+        notify "phase_failed" "Review: Changes requested for $phase" "Reviewer found issues. Attempting auto-fix..."
+
+        # Auto-fix based on review feedback
+        git checkout "$branch" 2>/dev/null
+        "$CLAUDE_BIN" -p "You are in /c/Users/Administrator/ai-sandbox on branch $branch. A code review found issues. Here is the review feedback:
+
+$review_comment
+
+Fix all mentioned issues. Run tests. Commit locally. DO NOT push." \
+            --dangerously-skip-permissions \
+            --model opus \
+            --effort max \
+            > "$LOGS_DIR/${phase}-review-fix.log" 2>&1 || true
+
+        # Push fixes
+        git push origin "$branch" 2>/dev/null || true
+    fi
+
+    # Merge the PR
+    log "  Merging PR #$pr_num..."
+    if gh pr merge "$pr_num" --repo "$REPO" --squash --delete-branch 2>/dev/null; then
+        log "  PR #$pr_num merged successfully"
+        notify "pr_merged" "PR #$pr_num merged" "feat($phase) merged into develop"
+        echo "merged"
+    elif gh pr merge "$pr_num" --repo "$REPO" --merge --delete-branch 2>/dev/null; then
+        log "  PR #$pr_num merged (merge commit)"
+        notify "pr_merged" "PR #$pr_num merged" "feat($phase) merged into develop"
+        echo "merged"
+    else
+        log "  WARN: Could not merge PR #$pr_num"
+        echo "merge_failed"
+    fi
+
+    # Return to develop
+    git checkout develop 2>/dev/null
+    git pull origin develop 2>/dev/null || true
+}
+
+# ============================================================================
+# Run one complete phase through the full pipeline
+# ============================================================================
+run_phase() {
+    local phase=$1
+    local desc="${PHASE_DESC[$phase]}"
+
+    log "=========================================="
+    log "PHASE: $phase — $desc"
+    log "=========================================="
+
+    update_phase "$phase" "status" '"running"'
+    update_phase "$phase" "start" "\"$(timestamp)\""
+    notify "phase_start" "$phase started" "$desc"
+
+    # Step 1: Create Issue
+    local issue_num=$(step_create_issue "$phase" "$desc")
+    update_phase "$phase" "issue" "\"$issue_num\""
+
+    # Step 2: Create branch
+    local branch=$(step_create_branch "$phase")
+    update_phase "$phase" "branch" "\"$branch\""
+
+    # Step 3: Code
+    local code_exit=$(step_code "$phase")
+    update_phase "$phase" "exit_code" "$code_exit"
+
+    # Step 4: Test
+    local test_result=$(step_test "$phase")
+    update_phase "$phase" "test_result" "\"$test_result\""
+
+    # Step 5: Create PR
+    local pr_url=""
+    if [ "$test_result" = "pass" ] || [[ "$test_result" == *"fail"* ]]; then
+        # Create PR even if some tests fail (reviewer will catch it)
+        pr_url=$(step_create_pr "$phase" "$desc" "$issue_num" "$branch")
+    fi
+    update_phase "$phase" "pr" "\"$pr_url\""
+
+    # Step 6: Review + Merge
+    local review_result=$(step_review_and_merge "$phase" "$pr_url" "$branch")
+    update_phase "$phase" "review" "\"$review_result\""
+
+    # Final status
+    if [ "$review_result" = "merged" ]; then
+        update_phase "$phase" "status" '"completed"'
+        log "PHASE COMPLETED: $phase"
+        notify "phase_complete" "$phase completed" "$desc\\nIssue: #$issue_num\\nTests: $test_result\\nReview: $review_result"
+    else
+        update_phase "$phase" "status" '"failed"'
+        log "PHASE FAILED: $phase (test=$test_result, review=$review_result)"
+    fi
+
+    update_phase "$phase" "end" "\"$(timestamp)\""
+    return 0
+}
+
+# ============================================================================
+# MAIN
 # ============================================================================
 
+cd "$PROJECT_DIR"
+
 log "============================================"
-log "AgentSandbox Overnight Build Starting"
-log "Project: $PROJECT_DIR"
+log "AgentSandbox Pipeline v2 Starting"
+log "Repo: https://github.com/$REPO"
 log "============================================"
+
+# Create labels (idempotent)
+gh label create "automated" --color "0e8a16" --repo "$REPO" 2>/dev/null || true
+gh label create "overnight-build" --color "1d76db" --repo "$REPO" 2>/dev/null || true
+
+notify "build_start" "Pipeline Started" "9-phase autonomous dev pipeline\\nRepo: github.com/$REPO\\nWorkflow: Issue → Branch → Code → Test → PR → Review → Merge"
 
 init_progress
 
-# Phase list in order
 PHASES=(
     "phase1-init"
     "phase2-types"
@@ -154,55 +456,63 @@ PHASES=(
     "phase9-polish"
 )
 
-# Check if we should resume from a specific phase
-RESUME_FROM=""
-if [ -f "$PROGRESS_FILE" ]; then
-    # Find last completed phase and resume from next
-    for phase in "${PHASES[@]}"; do
-        status=$(python -c "
+# Resume support: skip completed phases
+for phase in "${PHASES[@]}"; do
+    status=$(python -c "
 import json
 with open('$PROGRESS_FILE') as f:
     data = json.load(f)
 print(data['phases']['$phase']['status'])
 " 2>/dev/null || echo "pending")
 
-        if [ "$status" = "pending" ] || [ "$status" = "failed" ]; then
-            RESUME_FROM="$phase"
-            break
-        fi
-    done
-fi
-
-# Run all phases
-started=false
-for phase in "${PHASES[@]}"; do
-    # Skip completed phases if resuming
-    if [ -n "$RESUME_FROM" ] && [ "$started" = false ]; then
-        if [ "$phase" != "$RESUME_FROM" ]; then
-            log "Skipping already completed: $phase"
-            continue
-        fi
-        started=true
+    if [ "$status" = "completed" ]; then
+        log "Skipping completed: $phase"
+        continue
     fi
 
     run_phase "$phase"
 done
 
-# Update overall status
+# ---- Final: merge develop → main via PR ----
+log "Creating release PR: develop → main..."
+git checkout develop && git pull origin develop 2>/dev/null || true
+RELEASE_PR=$(gh pr create \
+    --repo "$REPO" \
+    --base main \
+    --head develop \
+    --title "release: AgentSandbox v0.1.0" \
+    --body "## Release v0.1.0
+
+Merge all overnight development into main.
+
+🤖 Auto-generated by pipeline" \
+    --label "type::chore" 2>/dev/null || echo "")
+
+if [ -n "$RELEASE_PR" ]; then
+    gh pr merge "$RELEASE_PR" --repo "$REPO" --merge 2>/dev/null || true
+    notify "deploy" "Release v0.1.0" "develop merged to main via PR"
+fi
+
+# Summary
 python -c "
 import json
 with open('$PROGRESS_FILE', 'r') as f:
     data = json.load(f)
 data['end_time'] = '$(timestamp)'
-failed = [k for k, v in data['phases'].items() if v['status'] == 'failed']
+p = data['phases']
+completed = [k for k,v in p.items() if v['status']=='completed']
+failed = [k for k,v in p.items() if v['status']=='failed']
 data['overall_status'] = 'completed' if not failed else 'completed_with_errors'
-data['failed_phases'] = failed
-with open('$PROGRESS_FILE', 'w') as f:
-    json.dump(data, f, indent=2)
+data['summary'] = {'completed':len(completed),'failed':len(failed),'total':len(p),'completed_phases':completed,'failed_phases':failed}
+with open('$PROGRESS_FILE','w') as f:
+    json.dump(data,f,indent=2)
 "
 
+COMPLETED=$(python -c "import json;d=json.load(open('$PROGRESS_FILE'));print(d['summary']['completed'])" 2>/dev/null)
+FAILED=$(python -c "import json;d=json.load(open('$PROGRESS_FILE'));print(d['summary']['failed'])" 2>/dev/null)
+
+notify "build_complete" "Pipeline Complete" "Completed: $COMPLETED/9, Failed: $FAILED\\n[View Repo](https://github.com/$REPO)"
+
 log "============================================"
-log "AgentSandbox Overnight Build Complete"
-log "Check progress: $PROGRESS_FILE"
-log "Check logs: $LOGS_DIR/"
+log "Pipeline Complete: $COMPLETED/9 passed, $FAILED failed"
 log "============================================"

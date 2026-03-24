@@ -1,5 +1,17 @@
 You are working on the AgentSandbox project in /c/Users/Administrator/ai-sandbox.
 
+## Repository Info
+- **GitHub Repo**: https://github.com/LURENYUANSHI/agent-sandbox
+- **Remote**: origin → LURENYUANSHI/agent-sandbox
+- **Branch Strategy**: main (production) + develop (integration), all work on feature branches from develop
+- **Current working directory**: /c/Users/Administrator/ai-sandbox
+- **Feishu notifications**: bash automation/feishu-notify.sh "<event>" "<title>" "<detail>"
+- **DO NOT push to remote, DO NOT create PRs, DO NOT create issues.** The orchestrator handles all git remote operations.
+- Only make local git commits. The orchestrator will push, create PRs, and merge.
+- After completing your work, send a Feishu notification: bash automation/feishu-notify.sh "phase_complete" "Phase N completed" "description"
+
+
+
 Read CLAUDE.md and docs/development-plan.md first to understand the full project.
 
 ## Your Task: Phase 1 - Project Initialization
@@ -7,7 +19,7 @@ Read CLAUDE.md and docs/development-plan.md first to understand the full project
 Complete ALL of the following:
 
 1. Initialize a git repository if not already done
-2. Create go.mod with module `github.com/anthropics/agent-sandbox` using Go 1.25
+2. Create go.mod with module `github.com/LURENYUANSHI/agent-sandbox` using Go 1.25
 3. Create ALL directories listed in CLAUDE.md project structure
 4. Create a Makefile with targets: build, test, lint, clean, run-server, run-web
 5. Create LICENSE file with Apache 2.0 license
