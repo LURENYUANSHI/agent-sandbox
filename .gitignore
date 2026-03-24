@@ -1,0 +1,41 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+agent-sandbox
+agent-sandbox-server
+
+# Go
+vendor/
+
+# Node
+web/node_modules/
+web/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets - NEVER commit
+.env
+.env.*
+automation/secrets.env
+
+# Logs & runtime
+automation/logs/
+automation/progress.json
+
+# SQLite
+*.db
+*.sqlite
+
+# Test
+coverage.out
+test-results.txt
