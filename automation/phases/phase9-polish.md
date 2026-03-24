@@ -1,5 +1,15 @@
 You are working on the AgentSandbox project in /c/Users/Administrator/ai-sandbox.
 
+## Repository Info
+- **GitHub Repo**: https://github.com/LURENYUANSHI/agent-sandbox
+- **Remote**: origin → LURENYUANSHI/agent-sandbox
+- **Branch Strategy**: main (production) + develop (integration), all work on feature branches from develop
+- **Current working directory**: /c/Users/Administrator/ai-sandbox
+- **Feishu notifications**: bash automation/feishu-notify.sh "<event>" "<title>" "<detail>"
+- After completing your work, send a Feishu notification: bash automation/feishu-notify.sh "phase_complete" "Phase N completed" "description"
+
+
+
 Read CLAUDE.md, docs/development-plan.md, and review ALL code that has been written.
 
 ## Your Task: Phase 9 - Documentation, Polish & Evaluation
