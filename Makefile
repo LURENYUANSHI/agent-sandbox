@@ -1,4 +1,4 @@
-.PHONY: build test lint clean run-server run-web
+.PHONY: build build-cli build-server test test-integration lint clean run-server run-web docker-build docker-run
 
 MODULE := github.com/LURENYUANSHI/agent-sandbox
 BIN_DIR := bin
@@ -14,7 +14,10 @@ build-server:
 	go build -o $(SERVER_BIN) ./cmd/server
 
 test:
-	go test ./... -v -cover
+	go test ./pkg/... -v -cover
+
+test-integration:
+	go test ./test/integration/... -v -cover
 
 lint:
 	go vet ./...
@@ -29,3 +32,9 @@ run-server:
 
 run-web:
 	cd web && npm run dev
+
+docker-build:
+	docker build -f docker/Dockerfile -t agent-sandbox:latest .
+
+docker-run:
+	cd docker && docker compose up -d

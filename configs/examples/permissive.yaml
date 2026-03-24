@@ -1,5 +1,11 @@
 # Permissive security policy - allows most operations
 name: permissive
 description: Permissive policy for trusted agents
+default_effect: allow
 
-rules: []
+rules:
+  - name: deny-root-delete
+    effect: deny
+    actions: [file]
+    paths: ["/*"]
+    file_ops: [delete]

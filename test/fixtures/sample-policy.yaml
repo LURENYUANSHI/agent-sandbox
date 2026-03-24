@@ -1,5 +1,23 @@
 # Sample policy for testing
 name: test-policy
-description: Test policy fixture
+description: Test policy fixture for integration tests
+default_effect: deny
 
-rules: []
+rules:
+  - name: allow-tmp-read
+    effect: allow
+    actions: [file]
+    paths: ["/tmp/*"]
+    file_ops: [read, list]
+
+  - name: allow-tmp-write
+    effect: allow
+    actions: [file]
+    paths: ["/tmp/*"]
+    file_ops: [write]
+
+  - name: deny-root-delete
+    effect: deny
+    actions: [file]
+    paths: ["/*"]
+    file_ops: [delete]

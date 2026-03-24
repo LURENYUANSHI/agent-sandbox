@@ -1,4 +1,32 @@
 {
   "trace_id": "sample-trace-001",
-  "spans": []
+  "sandbox_id": "sandbox-001",
+  "spans": [
+    {
+      "id": "evt-1",
+      "action": {
+        "type": "file",
+        "path": "/tmp/test.txt",
+        "file_op": "read"
+      },
+      "decision": "allowed",
+      "reason": "allow-tmp-read",
+      "start_time": "2025-01-01T00:00:00Z",
+      "end_time": "2025-01-01T00:00:01Z",
+      "duration_ms": 1000
+    },
+    {
+      "id": "evt-2",
+      "action": {
+        "type": "file",
+        "path": "/etc/passwd",
+        "file_op": "delete"
+      },
+      "decision": "denied",
+      "reason": "deny-root-delete",
+      "start_time": "2025-01-01T00:00:02Z",
+      "end_time": "2025-01-01T00:00:02Z",
+      "duration_ms": 0
+    }
+  ]
 }
