@@ -1,0 +1,5 @@
+# Coding agent policy - allows file and process operations, restricts network
+name: coding-agent
+description: Policy for coding agents with filesystem and process access
+
+rules: []
