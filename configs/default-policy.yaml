@@ -1,0 +1,7 @@
+# Default security policy for AgentSandbox
+# This policy provides a restrictive baseline
+
+name: default
+description: Default restrictive security policy
+
+rules: []

@@ -1,0 +1,5 @@
+# Strict security policy - denies most operations
+name: strict
+description: Strict policy that denies most operations
+
+rules: []

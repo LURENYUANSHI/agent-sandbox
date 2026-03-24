@@ -1,0 +1,5 @@
+# Sample policy for testing
+name: test-policy
+description: Test policy fixture
+
+rules: []
