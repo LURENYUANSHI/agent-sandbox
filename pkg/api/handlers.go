@@ -48,6 +48,40 @@ type SandboxResponse struct {
 	CreatedAt string `json:"created_at,omitempty"`
 }
 
+// --- Auth ---
+
+// GenerateTokenRequest is the request body for generating a token.
+type GenerateTokenRequest struct {
+	UserID string `json:"user_id" binding:"required"`
+	Role   string `json:"role" binding:"required"`
+}
+
+func (s *Server) handleGenerateToken(c *gin.Context) {
+	if !s.config.AuthEnabled {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "auth is not enabled"})
+		return
+	}
+
+	var req GenerateTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
+		return
+	}
+
+	if req.Role != "admin" && req.Role != "viewer" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "role must be admin or viewer"})
+		return
+	}
+
+	token, err := GenerateToken(s.config.AuthSecret, req.UserID, req.Role, 24*time.Hour)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "generate token: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
 // --- Health ---
 
 func (s *Server) handleHealth(c *gin.Context) {
