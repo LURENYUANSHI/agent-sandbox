@@ -1,17 +1,18 @@
-version: "3.9"
+version: "3.8"
 
 services:
-  server:
+  agent-sandbox:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     ports:
       - "8080:8080"
     volumes:
-      - sandbox-data:/app/data
+      - sandbox-data:/var/lib/agent-sandbox
+      - ../configs:/etc/agent-sandbox/configs
     environment:
-      - SANDBOX_DATA_DIR=/app/data
-      - SANDBOX_CONFIG_DIR=/app/configs
+      - SANDBOX_LOG_LEVEL=info
+      - SANDBOX_TRACE_DIR=/var/lib/agent-sandbox/traces
 
 volumes:
   sandbox-data:

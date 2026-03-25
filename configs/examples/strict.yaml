@@ -1,5 +1,32 @@
-# Strict security policy - denies most operations
 name: strict
-description: Strict policy that denies most operations
+version: "1.0"
+description: "Strict policy - deny by default, only allow reading in sandbox directory"
+default_effect: deny
+rules:
+  - id: allow-sandbox-read
+    name: "Allow reading files in sandbox"
+    actions: ["file:read"]
+    resources: ["/sandbox/**"]
+    effect: allow
+    priority: 10
 
-rules: []
+  - id: deny-all-write
+    name: "Deny all file writes"
+    actions: ["file:write", "file:delete"]
+    resources: ["**"]
+    effect: deny
+    priority: 100
+
+  - id: deny-all-network
+    name: "Deny all network access"
+    actions: ["net:*"]
+    resources: ["**"]
+    effect: deny
+    priority: 100
+
+  - id: deny-all-process
+    name: "Deny all process execution"
+    actions: ["proc:*", "shell:*"]
+    resources: ["**"]
+    effect: deny
+    priority: 100

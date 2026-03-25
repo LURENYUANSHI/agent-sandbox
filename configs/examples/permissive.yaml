@@ -1,5 +1,32 @@
-# Permissive security policy - allows most operations
 name: permissive
-description: Permissive policy for trusted agents
+version: "1.0"
+description: "Permissive policy for trusted agents - allow most operations"
+default_effect: allow
+rules:
+  - id: allow-all-file
+    name: "Allow all file operations"
+    actions: ["file:*"]
+    resources: ["**"]
+    effect: allow
+    priority: 10
 
-rules: []
+  - id: allow-all-network
+    name: "Allow all network operations"
+    actions: ["net:*"]
+    resources: ["**"]
+    effect: allow
+    priority: 10
+
+  - id: allow-all-process
+    name: "Allow all process execution"
+    actions: ["proc:*"]
+    resources: ["**"]
+    effect: allow
+    priority: 10
+
+  - id: deny-shell
+    name: "Deny direct shell execution"
+    actions: ["shell:exec"]
+    resources: ["**"]
+    effect: deny
+    priority: 50
