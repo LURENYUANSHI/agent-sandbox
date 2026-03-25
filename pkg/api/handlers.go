@@ -458,6 +458,52 @@ func (s *Server) handleWebSocket(c *gin.Context) {
 	}
 }
 
+// --- Audit ---
+
+func (s *Server) handleGetAuditLog(c *gin.Context) {
+	if s.auditLogger == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "audit logging is not enabled"})
+		return
+	}
+
+	filter := trace.AuditFilter{
+		SandboxID:  c.Query("sandbox_id"),
+		ActionType: c.Query("action_type"),
+		Effect:     c.Query("effect"),
+	}
+
+	if v := c.Query("start_time"); v != "" {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid start_time: " + err.Error()})
+			return
+		}
+		filter.StartTime = t
+	}
+	if v := c.Query("end_time"); v != "" {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid end_time: " + err.Error()})
+			return
+		}
+		filter.EndTime = t
+	}
+	if v := c.Query("limit"); v != "" {
+		var limit int
+		if _, err := fmt.Sscanf(v, "%d", &limit); err == nil && limit > 0 {
+			filter.Limit = limit
+		}
+	}
+
+	entries, err := s.auditLogger.QueryAuditLog(filter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "query audit log: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"entries": entries})
+}
+
 // --- Helpers ---
 
 func (s *Server) getSandboxEntry(c *gin.Context) (*SandboxEntry, bool) {

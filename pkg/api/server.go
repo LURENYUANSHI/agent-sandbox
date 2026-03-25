@@ -30,6 +30,7 @@ type ServerConfig struct {
 	CORSOrigins    []string
 	ExecConfig     appconfig.ExecutorConfig
 	PolicyConfig   appconfig.PolicyConfig
+	AuditDBPath    string // Path to audit log SQLite database (empty = disabled)
 }
 
 // SandboxEntry tracks a running sandbox and its associated resources.
@@ -63,6 +64,8 @@ type Server struct {
 
 	wsMu      sync.Mutex
 	wsClients map[string]map[*websocket.Conn]bool
+
+	auditLogger *trace.AuditLogger
 }
 
 // NewServer creates a new API server.
@@ -92,6 +95,15 @@ func NewServer(cfg ServerConfig) *Server {
 				return true
 			},
 		},
+	}
+
+	if cfg.AuditDBPath != "" {
+		auditLogger, err := trace.NewAuditLogger(cfg.AuditDBPath)
+		if err != nil {
+			log.Printf("WARNING: failed to initialize audit logger: %v", err)
+		} else {
+			s.auditLogger = auditLogger
+		}
 	}
 
 	s.router = gin.New()
@@ -130,6 +142,7 @@ func (s *Server) setupRoutes() {
 
 		v1.GET("/dashboard/stats", s.handleGetDashboardStats)
 		v1.GET("/dashboard/activity", s.handleGetRecentActivity)
+		v1.GET("/audit", s.handleGetAuditLog)
 	}
 }
 
@@ -170,6 +183,10 @@ func (s *Server) Shutdown(ctx context.Context) error {
 		entry.Recorder.Close()
 	}
 	s.mu.Unlock()
+
+	if s.auditLogger != nil {
+		s.auditLogger.Close()
+	}
 
 	shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()

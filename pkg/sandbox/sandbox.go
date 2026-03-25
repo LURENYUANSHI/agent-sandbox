@@ -22,12 +22,13 @@ const (
 
 // Instance is a running sandbox that executes actions under policy control.
 type Instance struct {
-	mu       sync.Mutex
-	config   Config
-	status   Status
-	policy   types.PolicyEngine
-	recorder types.TraceRecorder
-	created  time.Time
+	mu              sync.Mutex
+	config          Config
+	status          Status
+	policy          types.PolicyEngine
+	recorder        types.TraceRecorder
+	resourceMonitor *ResourceMonitor
+	created         time.Time
 }
 
 // NewSandbox creates a new sandbox instance. Call Start() to prepare it for execution.
@@ -61,6 +62,7 @@ func (s *Instance) Start(ctx context.Context) error {
 		return fmt.Errorf("create sandbox root dir: %w", err)
 	}
 
+	s.resourceMonitor = NewResourceMonitor(s.config)
 	s.status = StatusRunning
 
 	s.recorder.Record(types.TraceEvent{
@@ -118,6 +120,22 @@ func (s *Instance) Execute(ctx context.Context, action types.Action, executeFn f
 			Data:      map[string]string{"reason": decision.Reason},
 		})
 		return nil, fmt.Errorf("action denied by policy: %s", decision.Reason)
+	}
+
+	// 4b. Enforce resource limits
+	if s.resourceMonitor != nil {
+		if err := s.resourceMonitor.EnforceLimit(action, s.config); err != nil {
+			s.recorder.Record(types.TraceEvent{
+				SandboxID: s.config.ID,
+				Type:      types.EventResourceExceeded,
+				ActionID:  action.ID,
+				Data: map[string]string{
+					"error":       err.Error(),
+					"action_type": string(action.Type),
+				},
+			})
+			return nil, fmt.Errorf("resource limit exceeded: %w", err)
+		}
 	}
 
 	// 5. Execute with timeout
