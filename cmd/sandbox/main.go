@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/config"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/executor"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/policy"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
@@ -116,7 +117,7 @@ func createCmd() *cobra.Command {
 				return fmt.Errorf("create sandbox: %w", err)
 			}
 
-			exec := executor.NewExecutor(cfg)
+			exec := executor.NewExecutor(cfg, config.LoadFromEnv().Executor)
 
 			sandboxRegistry.entries[id] = &sandboxEntry{
 				instance: instance,

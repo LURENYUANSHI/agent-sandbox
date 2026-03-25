@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
+	appconfig "github.com/LURENYUANSHI/agent-sandbox/pkg/config"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/executor"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/policy"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
@@ -20,12 +21,15 @@ import (
 
 // ServerConfig holds configuration for the API server.
 type ServerConfig struct {
-	Port        int
-	DevMode     bool
-	AuthEnabled bool
-	AuthSecret  string
+	Port           int
+	DevMode        bool
+	AuthEnabled    bool
+	AuthSecret     string
 	RateLimitRPS   float64 // Requests per second (0 = disabled)
 	RateLimitBurst int     // Burst size for rate limiter
+	CORSOrigins    []string
+	ExecConfig     appconfig.ExecutorConfig
+	PolicyConfig   appconfig.PolicyConfig
 }
 
 // SandboxEntry tracks a running sandbox and its associated resources.
@@ -62,10 +66,21 @@ type Server struct {
 }
 
 // NewServer creates a new API server.
-func NewServer(config ServerConfig) *Server {
-	if !config.DevMode {
+func NewServer(cfg ServerConfig) *Server {
+	if !cfg.DevMode {
 		gin.SetMode(gin.ReleaseMode)
 	}
+
+	// Apply defaults for zero-value executor/policy config
+	defaults := appconfig.Default()
+	if cfg.ExecConfig == (appconfig.ExecutorConfig{}) {
+		cfg.ExecConfig = defaults.Executor
+	}
+	if cfg.PolicyConfig == (appconfig.PolicyConfig{}) {
+		cfg.PolicyConfig = defaults.Policy
+	}
+
+	config := cfg
 
 	s := &Server{
 		config:    config,
@@ -89,7 +104,7 @@ func (s *Server) setupRoutes() {
 	s.router.Use(Recovery())
 	s.router.Use(RequestID())
 	s.router.Use(Logger())
-	s.router.Use(CORS())
+	s.router.Use(CORS(s.config.CORSOrigins))
 	if s.config.RateLimitRPS > 0 {
 		s.router.Use(NewRateLimiter(s.config.RateLimitRPS, s.config.RateLimitBurst))
 	}

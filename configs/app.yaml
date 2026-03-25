@@ -1,0 +1,23 @@
+server:
+  port: 8080
+  auth_enabled: false
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://localhost:5173"
+
+sandbox:
+  default_timeout_sec: 300
+  default_max_memory_mb: 512
+  default_max_disk_mb: 1024
+  default_max_procs: 10
+
+executor:
+  max_read_size_mb: 10
+  max_write_size_mb: 10
+  max_response_size_mb: 5
+  http_timeout_sec: 30
+  tcp_timeout_sec: 10
+
+policy:
+  max_file_size_mb: 100
+  privileged_port_limit: 1024
