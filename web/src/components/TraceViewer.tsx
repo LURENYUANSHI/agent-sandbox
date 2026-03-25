@@ -7,23 +7,20 @@ import {
   Terminal,
   Cpu,
   Info,
+  type LucideProps,
 } from "lucide-react";
 import type { TraceEvent, ActionType, Effect } from "../lib/api";
+import { buildTree } from "../lib/trace-utils";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function actionIcon(type?: ActionType) {
+function ActionIcon({ type, ...props }: { type?: ActionType } & LucideProps) {
   switch (type) {
-    case "file":
-      return File;
-    case "network":
-      return Globe;
-    case "shell":
-      return Terminal;
-    case "process":
-      return Cpu;
-    default:
-      return Info;
+    case "file": return <File {...props} />;
+    case "network": return <Globe {...props} />;
+    case "shell": return <Terminal {...props} />;
+    case "process": return <Cpu {...props} />;
+    default: return <Info {...props} />;
   }
 }
 
@@ -47,27 +44,6 @@ function effectBarColor(effect: Effect): string {
     case "audit":
       return "bg-yellow-500";
   }
-}
-
-// Build a tree from flat events using parent_id
-export function buildTree(events: TraceEvent[]): TraceEvent[] {
-  const map = new Map<string, TraceEvent>();
-  const roots: TraceEvent[] = [];
-
-  for (const ev of events) {
-    map.set(ev.id, { ...ev, children: [] });
-  }
-
-  for (const ev of events) {
-    const node = map.get(ev.id)!;
-    if (ev.parent_id && map.has(ev.parent_id)) {
-      map.get(ev.parent_id)!.children!.push(node);
-    } else {
-      roots.push(node);
-    }
-  }
-
-  return roots;
 }
 
 // ─── Filter bar ──────────────────────────────────────────────────────────────
@@ -132,7 +108,6 @@ interface TreeNodeProps {
 function TreeNode({ event, maxDuration, depth }: TreeNodeProps) {
   const [expanded, setExpanded] = useState(depth < 2);
   const [showDetail, setShowDetail] = useState(false);
-  const Icon = actionIcon(event.action_type);
   const hasChildren = event.children && event.children.length > 0;
   const barWidth = maxDuration > 0 ? (event.duration_ms / maxDuration) * 100 : 0;
 
@@ -159,7 +134,7 @@ function TreeNode({ event, maxDuration, depth }: TreeNodeProps) {
         </button>
 
         {/* Icon + Effect badge */}
-        <Icon className="w-4 h-4 text-gray-400 shrink-0" />
+        <ActionIcon type={event.action_type} className="w-4 h-4 text-gray-400 shrink-0" />
         <span
           className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded border ${effectStyles(event.effect)}`}
         >
