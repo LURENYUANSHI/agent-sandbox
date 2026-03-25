@@ -30,6 +30,10 @@ const (
 type TraceEvent struct {
 	// ID is the unique identifier for this event.
 	ID string `json:"id"`
+	// TraceID groups related events into a single trace (OpenTelemetry compatible).
+	TraceID string `json:"trace_id"`
+	// SpanID identifies this specific span within the trace.
+	SpanID string `json:"span_id"`
 	// SandboxID identifies which sandbox generated this event.
 	SandboxID string `json:"sandbox_id"`
 	// ParentID links this event to a parent event, forming a trace tree.

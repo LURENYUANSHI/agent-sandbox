@@ -38,13 +38,15 @@ type Action struct {
 	ID string `json:"id"`
 	// Type categorizes the action (e.g., "file:read", "net:connect").
 	Type ActionType `json:"type"`
+	// Resource is the primary target of the action (e.g., file path, host, command).
+	Resource string `json:"resource"`
 	// Params contains operation-specific parameters.
 	// For file operations: {"path": "/etc/passwd", "mode": "r"}
 	// For network operations: {"host": "example.com", "port": "443"}
 	// For process operations: {"command": "ls", "args": "-la"}
-	Params map[string]string `json:"params"`
+	Params map[string]string `json:"params,omitempty"`
 	// Metadata holds agent-provided context about why the action is being performed.
-	Metadata map[string]string `json:"metadata"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	// Timestamp records when the action was requested.
 	Timestamp time.Time `json:"timestamp"`
 }

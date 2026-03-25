@@ -22,7 +22,7 @@ type Rule struct {
 	// Name is a human-readable name for the rule.
 	Name string `json:"name" yaml:"name"`
 	// Description explains what this rule does and why.
-	Description string `json:"description" yaml:"description"`
+	Description string `json:"description,omitempty" yaml:"description,omitempty"`
 	// Actions contains glob patterns matching action types (e.g., "file:*", "net:http").
 	Actions []string `json:"actions" yaml:"actions"`
 	// Resources contains patterns matching target resources (e.g., "/tmp/**", "*.example.com").

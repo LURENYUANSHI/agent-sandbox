@@ -1,5 +1,46 @@
-# Coding agent policy - allows file and process operations, restricts network
 name: coding-agent
-description: Policy for coding agents with filesystem and process access
+version: "1.0"
+description: "Policy for coding agents - filesystem and process access with restricted network"
+default_effect: deny
+rules:
+  - id: allow-workspace-rw
+    name: "Allow read/write in workspace"
+    actions: ["file:read", "file:write"]
+    resources: ["/workspace/**", "/tmp/**"]
+    effect: allow
+    priority: 10
 
-rules: []
+  - id: allow-workspace-delete
+    name: "Allow deleting files in workspace"
+    actions: ["file:delete"]
+    resources: ["/workspace/**", "/tmp/**"]
+    effect: allow
+    priority: 10
+
+  - id: allow-dev-tools
+    name: "Allow development tool execution"
+    actions: ["proc:exec"]
+    resources: ["go", "node", "npm", "npx", "python", "pip", "git", "make", "ls", "cat", "grep", "find", "head", "tail", "wc", "mkdir", "cp", "mv"]
+    effect: allow
+    priority: 10
+
+  - id: allow-package-registries
+    name: "Allow package registry access"
+    actions: ["net:http"]
+    resources: ["*.npmjs.org", "*.pypi.org", "*.golang.org", "*.github.com", "*.githubusercontent.com"]
+    effect: allow
+    priority: 10
+
+  - id: allow-localhost
+    name: "Allow localhost connections"
+    actions: ["net:connect", "net:http"]
+    resources: ["localhost:*", "127.0.0.1:*"]
+    effect: allow
+    priority: 10
+
+  - id: deny-shell
+    name: "Deny direct shell execution"
+    actions: ["shell:exec"]
+    resources: ["**"]
+    effect: deny
+    priority: 100
