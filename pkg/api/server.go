@@ -24,6 +24,8 @@ type ServerConfig struct {
 	DevMode     bool
 	AuthEnabled bool
 	AuthSecret  string
+	RateLimitRPS   float64 // Requests per second (0 = disabled)
+	RateLimitBurst int     // Burst size for rate limiter
 }
 
 // SandboxEntry tracks a running sandbox and its associated resources.
@@ -88,6 +90,9 @@ func (s *Server) setupRoutes() {
 	s.router.Use(RequestID())
 	s.router.Use(Logger())
 	s.router.Use(CORS())
+	if s.config.RateLimitRPS > 0 {
+		s.router.Use(NewRateLimiter(s.config.RateLimitRPS, s.config.RateLimitBurst))
+	}
 	s.router.Use(NewAuthMiddleware(s.config.AuthSecret, s.config.AuthEnabled))
 
 	v1 := s.router.Group("/api/v1")
