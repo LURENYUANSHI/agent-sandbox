@@ -10,27 +10,27 @@ const (
 
 // Rule defines a single policy rule matching an action type.
 type Rule struct {
-	Name        string     `json:"name" yaml:"name"`
-	Description string     `json:"description,omitempty" yaml:"description"`
-	ActionType  ActionType `json:"action_type" yaml:"action_type"`
-	Effect      Effect     `json:"effect" yaml:"effect"`
+	Name        string            `json:"name" yaml:"name"`
+	Description string            `json:"description,omitempty" yaml:"description"`
+	ActionType  ActionType        `json:"action_type" yaml:"action_type"`
+	Effect      Effect            `json:"effect" yaml:"effect"`
 	Conditions  map[string]string `json:"conditions,omitempty" yaml:"conditions"`
-	Priority    int        `json:"priority,omitempty" yaml:"priority"`
+	Priority    int               `json:"priority,omitempty" yaml:"priority"`
 }
 
 // Policy is a named collection of rules.
 type Policy struct {
-	Name        string `json:"name" yaml:"name"`
-	Description string `json:"description,omitempty" yaml:"description"`
-	Rules       []Rule `json:"rules" yaml:"rules"`
+	Name          string `json:"name" yaml:"name"`
+	Description   string `json:"description,omitempty" yaml:"description"`
+	Rules         []Rule `json:"rules" yaml:"rules"`
 	DefaultEffect Effect `json:"default_effect" yaml:"default_effect"`
 }
 
 // PolicyDecision captures the result of evaluating an action against a policy.
 type PolicyDecision struct {
-	Allowed    bool   `json:"allowed"`
-	Rule       string `json:"rule,omitempty"`
-	Reason     string `json:"reason,omitempty"`
+	Allowed bool   `json:"allowed"`
+	Rule    string `json:"rule,omitempty"`
+	Reason  string `json:"reason,omitempty"`
 }
 
 // PolicyEngine evaluates actions against loaded policies.

@@ -95,14 +95,21 @@ make build-cli
 
 ## API Reference
 
-| Method   | Endpoint                        | Description              |
-|----------|---------------------------------|--------------------------|
-| `POST`   | `/api/sandboxes`                | Create a new sandbox     |
-| `GET`    | `/api/sandboxes`                | List all sandboxes       |
-| `POST`   | `/api/sandboxes/:id/exec`       | Execute action in sandbox|
-| `GET`    | `/api/sandboxes/:id/traces`     | Get traces for sandbox   |
-| `POST`   | `/api/sandboxes/:id/replay`     | Start trace replay       |
-| `DELETE` | `/api/sandboxes/:id`            | Destroy a sandbox        |
+| Method   | Endpoint                            | Description                |
+|----------|-------------------------------------|----------------------------|
+| `GET`    | `/api/v1/health`                    | Health check               |
+| `POST`   | `/api/v1/sandboxes`                 | Create a new sandbox       |
+| `GET`    | `/api/v1/sandboxes`                 | List all sandboxes         |
+| `GET`    | `/api/v1/sandboxes/:id`             | Get sandbox details        |
+| `POST`   | `/api/v1/sandboxes/:id/start`       | Start a sandbox            |
+| `POST`   | `/api/v1/sandboxes/:id/exec`        | Execute action in sandbox  |
+| `POST`   | `/api/v1/sandboxes/:id/stop`        | Stop a sandbox             |
+| `DELETE` | `/api/v1/sandboxes/:id`             | Destroy a sandbox          |
+| `GET`    | `/api/v1/sandboxes/:id/traces`      | Get traces for sandbox     |
+| `POST`   | `/api/v1/sandboxes/:id/replay`      | Start trace replay         |
+| `GET`    | `/api/v1/sandboxes/:id/replay/next` | Get next replay event      |
+| `POST`   | `/api/v1/policies/validate`         | Validate a policy          |
+| `GET`    | `/api/v1/sandboxes/:id/ws`          | WebSocket trace streaming  |
 
 ## Policy Configuration
 

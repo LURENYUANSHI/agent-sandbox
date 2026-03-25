@@ -6,13 +6,13 @@ import "time"
 type ActionType string
 
 const (
-	ActionTypeFileRead    ActionType = "file.read"
-	ActionTypeFileWrite   ActionType = "file.write"
-	ActionTypeFileDelete  ActionType = "file.delete"
-	ActionTypeNetHTTP     ActionType = "net.http"
-	ActionTypeNetConnect  ActionType = "net.connect"
-	ActionTypeProcess     ActionType = "process.exec"
-	ActionTypeShell       ActionType = "shell.exec"
+	ActionTypeFileRead   ActionType = "file.read"
+	ActionTypeFileWrite  ActionType = "file.write"
+	ActionTypeFileDelete ActionType = "file.delete"
+	ActionTypeNetHTTP    ActionType = "net.http"
+	ActionTypeNetConnect ActionType = "net.connect"
+	ActionTypeProcess    ActionType = "process.exec"
+	ActionTypeShell      ActionType = "shell.exec"
 )
 
 // Action represents a request to perform an operation within the sandbox.

@@ -53,8 +53,8 @@ type Server struct {
 
 	upgrader websocket.Upgrader
 
-	wsMu        sync.Mutex
-	wsClients   map[string]map[*websocket.Conn]bool
+	wsMu      sync.Mutex
+	wsClients map[string]map[*websocket.Conn]bool
 }
 
 // NewServer creates a new API server.
