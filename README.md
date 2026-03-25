@@ -1,5 +1,7 @@
 # AgentSandbox
 
+[![CI](https://github.com/LURENYUANSHI/agent-sandbox/actions/workflows/ci.yml/badge.svg)](https://github.com/LURENYUANSHI/agent-sandbox/actions/workflows/ci.yml)
+
 > Open-source runtime sandbox for AI agents with policy enforcement, trace recording, and replay debugging.
 
 ## Why AgentSandbox?
