@@ -112,6 +112,9 @@ func (s *Server) setupRoutes() {
 		v1.GET("/sandboxes/:id/replay/next", s.handleReplayNext)
 		v1.POST("/policies/validate", s.handleValidatePolicy)
 		v1.GET("/sandboxes/:id/ws", s.handleWebSocket)
+
+		v1.GET("/dashboard/stats", s.handleGetDashboardStats)
+		v1.GET("/dashboard/activity", s.handleGetRecentActivity)
 	}
 }
 
