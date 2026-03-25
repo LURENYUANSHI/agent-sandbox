@@ -15,6 +15,11 @@ AgentSandbox provides a secure execution layer that:
 - **Supports trace replay** for understanding and reproducing agent behavior
 - **Provides a visual dashboard** for real-time monitoring and analysis
 - **Integrates with OpenTelemetry** for existing observability stacks
+- **Authenticates API access** with JWT token-based security
+- **Rate limits requests** to prevent abuse and ensure fair usage
+- **Validates all inputs** with comprehensive request validation
+- **Logs audit trails** with persistent, queryable audit records
+- **Enforces resource limits** on disk usage and process counts per sandbox
 
 ## Architecture
 
@@ -95,11 +100,22 @@ make build-cli
 #   replay    - Replay a recorded trace
 ```
 
+## Security
+
+AgentSandbox includes multiple layers of security for production deployments:
+
+- **JWT Authentication** — Token-based API authentication. Generate tokens via `POST /api/v1/auth/token` and include them as `Authorization: Bearer <token>` headers. Configurable secret and expiry via environment variables (`AGENTSANDBOX_JWT_SECRET`, `AGENTSANDBOX_JWT_EXPIRY`).
+- **Rate Limiting** — Per-IP rate limiting protects against abuse. Configurable rate and burst size via `AGENTSANDBOX_RATE_LIMIT` and `AGENTSANDBOX_RATE_BURST`.
+- **Input Validation** — All API inputs are validated before processing with structured error responses detailing validation failures.
+- **Audit Logging** — Every policy decision is recorded to a persistent SQLite audit log, queryable via `GET /api/v1/audit`. Supports filtering by sandbox ID, action type, effect, and time range.
+- **Resource Limits** — Per-sandbox enforcement of disk usage and process count limits prevents resource exhaustion.
+
 ## API Reference
 
 | Method   | Endpoint                            | Description                |
 |----------|-------------------------------------|----------------------------|
 | `GET`    | `/api/v1/health`                    | Health check               |
+| `POST`   | `/api/v1/auth/token`                | Generate JWT auth token    |
 | `POST`   | `/api/v1/sandboxes`                 | Create a new sandbox       |
 | `GET`    | `/api/v1/sandboxes`                 | List all sandboxes         |
 | `GET`    | `/api/v1/sandboxes/:id`             | Get sandbox details        |
@@ -112,6 +128,9 @@ make build-cli
 | `GET`    | `/api/v1/sandboxes/:id/replay/next` | Get next replay event      |
 | `POST`   | `/api/v1/policies/validate`         | Validate a policy          |
 | `GET`    | `/api/v1/sandboxes/:id/ws`          | WebSocket trace streaming  |
+| `GET`    | `/api/v1/dashboard/stats`           | Dashboard statistics       |
+| `GET`    | `/api/v1/dashboard/activity`        | Recent activity feed       |
+| `GET`    | `/api/v1/audit`                     | Query audit log            |
 
 ## Policy Configuration
 
