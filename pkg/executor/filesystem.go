@@ -26,6 +26,11 @@ func NewFilesystemExecutor(rootDir string) *FilesystemExecutor {
 // resolvePath validates that the target path is inside the sandbox root.
 // It resolves symlinks and prevents directory traversal.
 func (f *FilesystemExecutor) resolvePath(target string) (string, error) {
+	// Reject paths containing null bytes
+	if strings.ContainsRune(target, '\x00') {
+		return "", fmt.Errorf("path contains null byte")
+	}
+
 	// Make path absolute relative to sandbox root
 	var absPath string
 	if filepath.IsAbs(target) {
@@ -142,7 +147,10 @@ func (f *FilesystemExecutor) ExecuteFileDelete(ctx context.Context, action types
 	}
 
 	// Prevent deleting the sandbox root itself
-	rootAbs, _ := filepath.Abs(f.rootDir)
+	rootAbs, err := filepath.Abs(f.rootDir)
+	if err != nil {
+		return nil, fmt.Errorf("resolve root dir: %w", err)
+	}
 	if filepath.Clean(resolved) == filepath.Clean(rootAbs) {
 		return nil, fmt.Errorf("cannot delete sandbox root directory")
 	}

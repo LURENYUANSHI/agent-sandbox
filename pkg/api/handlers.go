@@ -60,6 +60,11 @@ func (s *Server) handleHealth(c *gin.Context) {
 // --- Sandbox CRUD ---
 
 func (s *Server) handleCreateSandbox(c *gin.Context) {
+	if c.Request.Body == nil || c.Request.ContentLength == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "request body is required"})
+		return
+	}
+
 	var req CreateSandboxRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
@@ -186,6 +191,11 @@ func (s *Server) handleStartSandbox(c *gin.Context) {
 func (s *Server) handleExecAction(c *gin.Context) {
 	entry, ok := s.getSandboxEntry(c)
 	if !ok {
+		return
+	}
+
+	if c.Request.Body == nil || c.Request.ContentLength == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "request body is required"})
 		return
 	}
 
