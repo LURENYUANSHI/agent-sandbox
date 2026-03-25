@@ -5,7 +5,7 @@ import "time"
 // ActionType represents the category of action an AI agent is attempting to perform.
 type ActionType string
 
-// Fine-grained action types used by the policy engine.
+// Fine-grained action types (colon-separated) used by the policy engine rules.
 const (
 	ActionFileRead   ActionType = "file:read"
 	ActionFileWrite  ActionType = "file:write"
@@ -18,12 +18,21 @@ const (
 	ActionShellExec  ActionType = "shell:exec"
 )
 
+// Dot-separated action types used by the sandbox executor.
+const (
+	ActionTypeFileRead   ActionType = "file.read"
+	ActionTypeFileWrite  ActionType = "file.write"
+	ActionTypeFileDelete ActionType = "file.delete"
+	ActionTypeNetHTTP    ActionType = "net.http"
+	ActionTypeNetConnect ActionType = "net.connect"
+	ActionTypeProcess    ActionType = "process.exec"
+	ActionTypeShell      ActionType = "shell.exec"
+)
+
 // Category-level action types used by the trace system.
 const (
 	ActionTypeFile    ActionType = "file"
 	ActionTypeNetwork ActionType = "network"
-	ActionTypeProcess ActionType = "process"
-	ActionTypeShell   ActionType = "shell"
 )
 
 // Action represents a single operation that an AI agent requests to perform
@@ -40,14 +49,14 @@ type Action struct {
 
 // FileAction represents a filesystem operation.
 type FileAction struct {
-	Operation string `json:"operation"` // read, write, delete, list, mkdir
+	Operation string `json:"operation"`
 	Path      string `json:"path"`
 	Content   string `json:"content,omitempty"`
 }
 
 // NetworkAction represents a network operation.
 type NetworkAction struct {
-	Operation string `json:"operation"` // http, tcp, dns
+	Operation string `json:"operation"`
 	Host      string `json:"host"`
 	Port      int    `json:"port,omitempty"`
 	Method    string `json:"method,omitempty"`
@@ -56,7 +65,7 @@ type NetworkAction struct {
 
 // ProcessAction represents a process operation.
 type ProcessAction struct {
-	Operation string   `json:"operation"` // exec, kill, signal
+	Operation string   `json:"operation"`
 	Command   string   `json:"command"`
 	Args      []string `json:"args,omitempty"`
 	PID       int      `json:"pid,omitempty"`
@@ -70,8 +79,12 @@ type ShellAction struct {
 
 // ActionResult captures the outcome of executing an action within the sandbox.
 type ActionResult struct {
-	Success  bool   `json:"success"`
-	Output   string `json:"output,omitempty"`
-	Error    string `json:"error,omitempty"`
-	ExitCode int    `json:"exit_code,omitempty"`
+	ActionID   string        `json:"action_id,omitempty"`
+	Success    bool          `json:"success"`
+	Output     string        `json:"output,omitempty"`
+	Error      string        `json:"error,omitempty"`
+	ExitCode   int           `json:"exit_code,omitempty"`
+	Duration   time.Duration `json:"duration,omitempty"`
+	BytesRead  int64         `json:"bytes_read,omitempty"`
+	BytesWrite int64         `json:"bytes_written,omitempty"`
 }

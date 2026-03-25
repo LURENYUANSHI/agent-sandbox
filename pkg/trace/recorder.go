@@ -1,7 +1,6 @@
 package trace
 
 import (
-	"crypto/rand"
 	"fmt"
 	"sync"
 	"time"
@@ -9,108 +8,65 @@ import (
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-// Recorder records trace events to a store. It is safe for concurrent use.
+// Recorder implements types.TraceRecorder with in-memory storage
+// and optional persistence to a Store.
 type Recorder struct {
-	store types.TraceStore
-	mu    sync.Mutex
+	mu     sync.RWMutex
+	events []types.TraceEvent
+	store  *Store
 }
 
-// NewRecorder creates a new Recorder that persists events to the given store.
-func NewRecorder(store types.TraceStore) *Recorder {
-	return &Recorder{store: store}
-}
-
-// RecordEvent saves an event to the store, auto-generating an ID and timestamp
-// if not already set.
-func (r *Recorder) RecordEvent(event *types.TraceEvent) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if event.ID == "" {
-		event.ID = generateID()
+// NewRecorder creates a recorder. If dbPath is non-empty, events are
+// also persisted to SQLite.
+func NewRecorder(dbPath string) (*Recorder, error) {
+	r := &Recorder{}
+	if dbPath != "" {
+		store, err := NewStore(dbPath)
+		if err != nil {
+			return nil, fmt.Errorf("open trace store: %w", err)
+		}
+		r.store = store
 	}
+	return r, nil
+}
+
+// Record adds a trace event.
+func (r *Recorder) Record(event types.TraceEvent) error {
 	if event.Timestamp.IsZero() {
 		event.Timestamp = time.Now()
 	}
-
-	return r.store.SaveEvent(event)
-}
-
-// SpanContext holds the state of an in-progress span.
-type SpanContext struct {
-	Event     *types.TraceEvent
-	StartTime time.Time
-}
-
-// StartSpan creates a new span event for an action execution.
-// Returns a SpanContext that must be passed to EndSpan when the action completes.
-func (r *Recorder) StartSpan(sandboxID string, action *types.Action) (*SpanContext, error) {
-	now := time.Now()
-	event := &types.TraceEvent{
-		ID:        generateID(),
-		SandboxID: sandboxID,
-		EventType: types.EventTypeSpanStart,
-		Action:    action,
-		Timestamp: now,
+	if event.ID == "" {
+		event.ID = fmt.Sprintf("evt-%d", time.Now().UnixNano())
 	}
 
 	r.mu.Lock()
-	defer r.mu.Unlock()
+	r.events = append(r.events, event)
+	r.mu.Unlock()
 
-	if err := r.store.SaveEvent(event); err != nil {
-		return nil, fmt.Errorf("saving span start: %w", err)
+	if r.store != nil {
+		return r.store.Save(event)
 	}
-
-	return &SpanContext{Event: event, StartTime: now}, nil
+	return nil
 }
 
-// StartChildSpan creates a nested span under a parent span.
-func (r *Recorder) StartChildSpan(parentCtx *SpanContext, sandboxID string, action *types.Action) (*SpanContext, error) {
-	now := time.Now()
-	event := &types.TraceEvent{
-		ID:        generateID(),
-		SandboxID: sandboxID,
-		ParentID:  parentCtx.Event.ID,
-		EventType: types.EventTypeSpanStart,
-		Action:    action,
-		Timestamp: now,
+// GetEvents returns all events for a given sandbox ID.
+func (r *Recorder) GetEvents(sandboxID string) ([]types.TraceEvent, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var result []types.TraceEvent
+	for _, e := range r.events {
+		if e.SandboxID == sandboxID {
+			result = append(result, e)
+		}
 	}
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if err := r.store.SaveEvent(event); err != nil {
-		return nil, fmt.Errorf("saving child span start: %w", err)
-	}
-
-	return &SpanContext{Event: event, StartTime: now}, nil
+	return result, nil
 }
 
-// EndSpan closes a span, calculating duration and recording the result.
-func (r *Recorder) EndSpan(ctx *SpanContext, result *types.ActionResult) error {
-	now := time.Now()
-	duration := now.Sub(ctx.StartTime)
-
-	event := &types.TraceEvent{
-		ID:         generateID(),
-		SandboxID:  ctx.Event.SandboxID,
-		ParentID:   ctx.Event.ID,
-		EventType:  types.EventTypeSpanEnd,
-		Action:     ctx.Event.Action,
-		Result:     result,
-		Timestamp:  now,
-		DurationNs: duration.Nanoseconds(),
-		Attributes: ctx.Event.Attributes,
+// Close releases resources.
+func (r *Recorder) Close() error {
+	if r.store != nil {
+		return r.store.Close()
 	}
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	return r.store.SaveEvent(event)
-}
-
-func generateID() string {
-	b := make([]byte, 16)
-	_, _ = rand.Read(b)
-	return fmt.Sprintf("%x", b)
+	return nil
 }

@@ -1,30 +1,44 @@
 package policy
 
 import (
-	"context"
+	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-// Engine implements the types.PolicyEngine interface.
+// Engine implements the types.PolicyEngine interface with built-in safety rules,
+// priority-based evaluation, and glob pattern matching.
 type Engine struct {
 	mu           sync.RWMutex
-	policy       types.Policy
+	policy       *types.Policy
 	builtinRules []BuiltinRule
 }
 
-// NewPolicyEngine creates a new policy engine with the given default policy.
+// NewPolicyEngine creates a new policy engine with built-in rules and the given default policy.
 func NewPolicyEngine(defaultPolicy types.Policy) *Engine {
 	return &Engine{
-		policy:       defaultPolicy,
+		policy:       &defaultPolicy,
 		builtinRules: DefaultBuiltinRules(),
 	}
 }
 
-// Evaluate checks an action against built-in rules first, then user policy rules by priority.
-func (e *Engine) Evaluate(_ context.Context, action types.Action) types.PolicyDecision {
+// NewEngine creates a policy engine with a deny-all default and built-in rules.
+func NewEngine() *Engine {
+	return &Engine{
+		policy: &types.Policy{
+			Name:          "empty",
+			DefaultEffect: types.EffectDeny,
+		},
+		builtinRules: DefaultBuiltinRules(),
+	}
+}
+
+// Evaluate checks an action against built-in rules first, then user policy rules.
+// Implements the types.PolicyEngine interface.
+func (e *Engine) Evaluate(action types.Action) types.PolicyDecision {
 	// Built-in rules are always checked first and cannot be overridden.
 	for _, rule := range e.builtinRules {
 		if decision, matched := rule.Check(action); matched {
@@ -35,14 +49,13 @@ func (e *Engine) Evaluate(_ context.Context, action types.Action) types.PolicyDe
 	e.mu.RLock()
 	defer e.mu.RUnlock()
 
-	// Sort rules by priority descending (higher priority evaluated first).
+	// Try glob-based matching (phase3 rules with Actions/Resources patterns).
 	rules := make([]types.Rule, len(e.policy.Rules))
 	copy(rules, e.policy.Rules)
 	sort.SliceStable(rules, func(i, j int) bool {
 		return rules[i].Priority > rules[j].Priority
 	})
 
-	// Return the first matching rule's effect.
 	for i := range rules {
 		if matchesRule(action, rules[i]) {
 			r := rules[i]
@@ -61,8 +74,9 @@ func (e *Engine) Evaluate(_ context.Context, action types.Action) types.PolicyDe
 		effect = types.EffectDeny
 	}
 	return types.PolicyDecision{
-		Effect: effect,
-		Reason: "default policy effect",
+		Effect:  effect,
+		Allowed: effect == types.EffectAllow,
+		Reason:  "default policy: " + string(effect),
 	}
 }
 
@@ -70,7 +84,7 @@ func (e *Engine) Evaluate(_ context.Context, action types.Action) types.PolicyDe
 func (e *Engine) LoadPolicy(policy types.Policy) error {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	e.policy = policy
+	e.policy = &policy
 	return nil
 }
 
@@ -78,33 +92,74 @@ func (e *Engine) LoadPolicy(policy types.Policy) error {
 func (e *Engine) GetPolicy() types.Policy {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
-	return e.policy
+	return *e.policy
 }
 
-// matchesRule checks if an action matches a rule's action patterns and resource patterns.
+// matchesRule checks if an action matches a rule using both glob-based and
+// ActionType-based matching strategies.
 func matchesRule(action types.Action, rule types.Rule) bool {
-	actionMatched := false
-	for _, pattern := range rule.Actions {
-		if MatchGlob(string(action.Type), pattern) {
-			actionMatched = true
-			break
+	// Strategy 1: Glob-based matching on Actions/Resources patterns.
+	if len(rule.Actions) > 0 {
+		actionMatched := false
+		for _, pattern := range rule.Actions {
+			if MatchGlob(string(action.Type), pattern) {
+				actionMatched = true
+				break
+			}
 		}
-	}
-	if !actionMatched {
+		if !actionMatched {
+			return false
+		}
+		if len(rule.Resources) == 0 {
+			return true
+		}
+		for _, pattern := range rule.Resources {
+			if MatchGlob(action.Resource, pattern) {
+				return true
+			}
+		}
 		return false
 	}
 
-	// If no resources specified, match any resource.
-	if len(rule.Resources) == 0 {
-		return true
+	// Strategy 2: ActionType-based matching with conditions (phase5 style).
+	if rule.ActionType != "" {
+		if !matchActionType(rule.ActionType, action.Type) {
+			return false
+		}
+		return matchConditions(rule.Conditions, action)
 	}
 
-	for _, pattern := range rule.Resources {
-		if MatchGlob(action.Resource, pattern) {
-			return true
+	return false
+}
+
+// matchActionType checks if a rule's action type matches the action.
+// Supports wildcard prefix matching: "file.*" matches "file.read", "file.write", etc.
+func matchActionType(ruleType, actionType types.ActionType) bool {
+	rt := string(ruleType)
+	at := string(actionType)
+	if rt == "*" {
+		return true
+	}
+	if strings.HasSuffix(rt, ".*") {
+		prefix := strings.TrimSuffix(rt, ".*")
+		return strings.HasPrefix(at, prefix+".")
+	}
+	return rt == at
+}
+
+// matchConditions checks if all rule conditions match the action parameters.
+func matchConditions(conditions map[string]string, action types.Action) bool {
+	for key, pattern := range conditions {
+		val, ok := action.Params[key]
+		if !ok {
+			return false
+		}
+		matched, err := filepath.Match(pattern, val)
+		if err != nil || !matched {
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 // MatchGlob matches a string against a glob pattern.
@@ -122,7 +177,6 @@ func MatchGlob(str, pattern string) bool {
 
 func doMatch(str, pattern string) bool {
 	for len(pattern) > 0 {
-		// Double-star: matches everything including path separators.
 		if len(pattern) >= 2 && pattern[0] == '*' && pattern[1] == '*' {
 			rest := pattern[2:]
 			if len(rest) > 0 && rest[0] == '/' {
@@ -136,7 +190,6 @@ func doMatch(str, pattern string) bool {
 			return false
 		}
 
-		// Single star: matches any sequence of non-/ characters.
 		if pattern[0] == '*' {
 			rest := pattern[1:]
 			for i := 0; i <= len(str); i++ {
@@ -154,7 +207,6 @@ func doMatch(str, pattern string) bool {
 			return false
 		}
 
-		// Question mark: matches any single non-/ character.
 		if pattern[0] == '?' {
 			if str[0] == '/' {
 				return false
@@ -164,7 +216,6 @@ func doMatch(str, pattern string) bool {
 			continue
 		}
 
-		// Literal character match.
 		if pattern[0] != str[0] {
 			return false
 		}

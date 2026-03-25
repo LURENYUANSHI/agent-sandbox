@@ -166,7 +166,7 @@ func eventToSpan(event *types.TraceEvent, traceID string) OTLPSpan {
 
 	attrs := []KeyValue{
 		{Key: "sandbox.id", Value: AttrValue{StringValue: event.SandboxID}},
-		{Key: "event.type", Value: AttrValue{StringValue: string(event.EventType)}},
+		{Key: "event.type", Value: AttrValue{StringValue: string(event.Type)}},
 	}
 
 	if event.Action != nil {
@@ -192,9 +192,9 @@ func eventToSpan(event *types.TraceEvent, traceID string) OTLPSpan {
 		})
 	}
 
-	name := string(event.EventType)
+	name := string(event.Type)
 	if event.Action != nil {
-		name = fmt.Sprintf("%s.%s", event.Action.Type, event.EventType)
+		name = fmt.Sprintf("%s.%s", event.Action.Type, event.Type)
 	}
 
 	return OTLPSpan{

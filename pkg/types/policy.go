@@ -12,7 +12,7 @@ const (
 // Rule defines a single policy rule that matches actions against patterns
 // and produces an effect (allow, deny, or audit).
 type Rule struct {
-	ID          string            `json:"id" yaml:"id"`
+	ID          string            `json:"id,omitempty" yaml:"id,omitempty"`
 	Name        string            `json:"name" yaml:"name"`
 	Description string            `json:"description,omitempty" yaml:"description,omitempty"`
 	Actions     []string          `json:"actions,omitempty" yaml:"actions,omitempty"`
@@ -31,4 +31,17 @@ type Policy struct {
 	Description   string `json:"description,omitempty" yaml:"description,omitempty"`
 	DefaultEffect Effect `json:"default_effect" yaml:"default_effect"`
 	Rules         []Rule `json:"rules" yaml:"rules"`
+}
+
+// PolicyEngine evaluates actions against loaded policies.
+type PolicyEngine interface {
+	Evaluate(action Action) PolicyDecision
+	LoadPolicy(policy Policy) error
+}
+
+// TraceRecorder records trace events during sandbox execution.
+type TraceRecorder interface {
+	Record(event TraceEvent) error
+	GetEvents(sandboxID string) ([]TraceEvent, error)
+	Close() error
 }

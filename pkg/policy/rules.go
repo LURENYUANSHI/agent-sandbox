@@ -33,6 +33,29 @@ func DefaultBuiltinRules() []BuiltinRule {
 	}
 }
 
+// BuiltInRules returns a set of safety rules as types.Rule values
+// for use with the ActionType-based matching engine.
+func BuiltInRules() []types.Rule {
+	return []types.Rule{
+		{
+			Name:        "deny-delete-root",
+			Description: "prevent deletion of root or system directories",
+			ActionType:  types.ActionTypeFileDelete,
+			Effect:      types.EffectDeny,
+			Conditions:  map[string]string{"path": "/"},
+			Priority:    1000,
+		},
+		{
+			Name:        "deny-write-etc",
+			Description: "prevent writing to /etc",
+			ActionType:  types.ActionTypeFileWrite,
+			Effect:      types.EffectDeny,
+			Conditions:  map[string]string{"path": "/etc/*"},
+			Priority:    1000,
+		},
+	}
+}
+
 func builtinDeny(ruleID, reason string) types.PolicyDecision {
 	return types.PolicyDecision{
 		Effect: types.EffectDeny,
@@ -42,7 +65,6 @@ func builtinDeny(ruleID, reason string) types.PolicyDecision {
 
 // --- Individual rule implementations ---
 
-// systemPaths that must never be deleted.
 var systemPaths = []string{
 	"/", "/etc", "/usr", "/bin", "/sbin", "/boot",
 	"/sys", "/proc", "/dev", "/var", "/lib", "/root", "/home",
@@ -84,7 +106,6 @@ func noKillInit() BuiltinRule {
 	}
 }
 
-// dangerousSubstrings are command fragments that are always blocked.
 var dangerousSubstrings = []string{
 	"mkfs",
 	"dd if=/dev/zero",
@@ -102,7 +123,6 @@ func noDangerousCommands() BuiltinRule {
 			}
 			cmd := action.Resource
 
-			// Check for known dangerous substrings.
 			for _, ds := range dangerousSubstrings {
 				if strings.Contains(cmd, ds) {
 					return builtinDeny("no-dangerous-commands",
@@ -110,7 +130,6 @@ func noDangerousCommands() BuiltinRule {
 				}
 			}
 
-			// Check for destructive rm targeting root / system paths.
 			if isDestructiveRm(cmd) {
 				return builtinDeny("no-dangerous-commands",
 					"rm with force+recursive targeting system path"), true
@@ -174,11 +193,9 @@ func noPrivilegedPorts() BuiltinRule {
 }
 
 func parsePort(resource string) (int, bool) {
-	// Try as plain number.
 	if port, err := strconv.Atoi(resource); err == nil {
 		return port, true
 	}
-	// Try as host:port.
 	_, portStr, err := net.SplitHostPort(resource)
 	if err != nil {
 		return 0, false

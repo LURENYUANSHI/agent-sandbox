@@ -5,15 +5,17 @@ import "time"
 // EventType represents the kind of trace event recorded during sandbox operation.
 type EventType string
 
-// Lifecycle event types for policy and sandbox tracking.
+// Lifecycle event types for sandbox and policy tracking.
 const (
+	EventSandboxStarted  EventType = "sandbox.started"
+	EventSandboxStopped  EventType = "sandbox.stopped"
+	EventSandboxCreated  EventType = "sandbox.created"
 	EventActionRequested EventType = "action.requested"
 	EventPolicyEvaluated EventType = "policy.evaluated"
-	EventActionExecuted  EventType = "action.executed"
+	EventActionAllowed   EventType = "action.allowed"
 	EventActionDenied    EventType = "action.denied"
+	EventActionExecuted  EventType = "action.executed"
 	EventActionFailed    EventType = "action.failed"
-	EventSandboxCreated  EventType = "sandbox.created"
-	EventSandboxStopped  EventType = "sandbox.stopped"
 )
 
 // Trace-system event types for span-based recording.
@@ -26,17 +28,21 @@ const (
 	EventTypeInfo           EventType = "info"
 )
 
-// TraceEvent represents a single recorded event in a trace.
+// TraceEvent records a single event in the sandbox lifecycle.
+// Supports both the span-based trace system and simple event recording.
 type TraceEvent struct {
 	ID             string            `json:"id"`
 	SandboxID      string            `json:"sandbox_id"`
 	ParentID       string            `json:"parent_id,omitempty"`
-	EventType      EventType         `json:"event_type"`
+	Type           EventType         `json:"type"`
 	Action         *Action           `json:"action,omitempty"`
+	ActionID       string            `json:"action_id,omitempty"`
 	Result         *ActionResult     `json:"result,omitempty"`
 	PolicyDecision *PolicyDecision   `json:"policy_decision,omitempty"`
 	Timestamp      time.Time         `json:"timestamp"`
+	Duration       time.Duration     `json:"duration,omitempty"`
 	DurationNs     int64             `json:"duration_ns,omitempty"`
+	Data           map[string]string `json:"data,omitempty"`
 	Attributes     map[string]string `json:"attributes,omitempty"`
 }
 
@@ -67,7 +73,7 @@ type TimelineEntry struct {
 	Depth int         `json:"depth"`
 }
 
-// TraceStore defines the interface for trace persistence.
+// TraceStore defines the interface for span-based trace persistence.
 type TraceStore interface {
 	SaveEvent(event *TraceEvent) error
 	GetEvent(id string) (*TraceEvent, error)
