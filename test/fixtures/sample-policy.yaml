@@ -1,5 +1,19 @@
-# Sample policy for testing
 name: test-policy
-description: Test policy fixture
+description: Test policy fixture for integration tests
+default_effect: deny
 
-rules: []
+rules:
+  - name: allow-file-read
+    action_type: "file.read"
+    effect: allow
+    description: Allow reading files
+
+  - name: allow-file-write
+    action_type: "file.write"
+    effect: allow
+    description: Allow writing files
+
+  - name: deny-file-delete
+    action_type: "file.delete"
+    effect: deny
+    description: Deny deleting files
