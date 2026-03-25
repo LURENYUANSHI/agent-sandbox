@@ -127,7 +127,7 @@ func (s *Server) handleCreateSandbox(c *gin.Context) {
 	cfg.RootDir = rootDir
 	cfg.TracePath = filepath.Join(rootDir, "traces.db")
 
-	engine := policy.NewEngine()
+	engine := policy.NewEngineWithConfig(s.config.PolicyConfig)
 
 	if req.PolicyFile != "" {
 		p, err := policy.ParseFile(req.PolicyFile)
@@ -153,7 +153,7 @@ func (s *Server) handleCreateSandbox(c *gin.Context) {
 		return
 	}
 
-	exec := executor.NewExecutor(cfg)
+	exec := executor.NewExecutor(cfg, s.config.ExecConfig)
 
 	s.mu.Lock()
 	s.sandboxes[id] = &SandboxEntry{

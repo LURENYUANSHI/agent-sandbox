@@ -7,20 +7,24 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/config"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-const maxReadSize = 10 * 1024 * 1024  // 10 MB
-const maxWriteSize = 10 * 1024 * 1024 // 10 MB
-
 // FilesystemExecutor handles file read/write/delete within a sandbox root.
 type FilesystemExecutor struct {
-	rootDir string
+	rootDir      string
+	maxReadSize  int64
+	maxWriteSize int64
 }
 
 // NewFilesystemExecutor creates a filesystem executor rooted at dir.
-func NewFilesystemExecutor(rootDir string) *FilesystemExecutor {
-	return &FilesystemExecutor{rootDir: rootDir}
+func NewFilesystemExecutor(rootDir string, cfg config.ExecutorConfig) *FilesystemExecutor {
+	return &FilesystemExecutor{
+		rootDir:      rootDir,
+		maxReadSize:  int64(cfg.MaxReadSizeMB) * 1024 * 1024,
+		maxWriteSize: int64(cfg.MaxWriteSizeMB) * 1024 * 1024,
+	}
 }
 
 // resolvePath validates that the target path is inside the sandbox root.
@@ -83,8 +87,8 @@ func (f *FilesystemExecutor) ExecuteFileRead(ctx context.Context, action types.A
 	if err != nil {
 		return nil, fmt.Errorf("stat file: %w", err)
 	}
-	if info.Size() > maxReadSize {
-		return nil, fmt.Errorf("file size %d exceeds max read size %d", info.Size(), maxReadSize)
+	if info.Size() > f.maxReadSize {
+		return nil, fmt.Errorf("file size %d exceeds max read size %d", info.Size(), f.maxReadSize)
 	}
 
 	data, err := os.ReadFile(resolved)
@@ -108,8 +112,8 @@ func (f *FilesystemExecutor) ExecuteFileWrite(ctx context.Context, action types.
 		return nil, fmt.Errorf("file.write requires 'path' parameter")
 	}
 
-	if len(content) > maxWriteSize {
-		return nil, fmt.Errorf("content size %d exceeds max write size %d", len(content), maxWriteSize)
+	if int64(len(content)) > f.maxWriteSize {
+		return nil, fmt.Errorf("content size %d exceeds max write size %d", len(content), f.maxWriteSize)
 	}
 
 	resolved, err := f.resolvePath(path)

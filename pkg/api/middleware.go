@@ -54,10 +54,13 @@ func Recovery() gin.HandlerFunc {
 	}
 }
 
-// CORS returns a CORS middleware configured for development.
-func CORS() gin.HandlerFunc {
+// CORS returns a CORS middleware using the provided allowed origins.
+func CORS(origins []string) gin.HandlerFunc {
+	if len(origins) == 0 {
+		origins = []string{"http://localhost:3000", "http://localhost:5173"}
+	}
 	return cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173"},
+		AllowOrigins:     origins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-Request-ID"},
 		ExposeHeaders:    []string{"X-Request-ID"},

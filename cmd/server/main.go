@@ -8,24 +8,36 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/api"
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/config"
 )
 
 func main() {
-	port := 8080
-	if p := os.Getenv("PORT"); p != "" {
-		if v, err := strconv.Atoi(p); err == nil {
-			port = v
+	// Load application config from env (or YAML file via --config flag)
+	var appCfg *config.AppConfig
+	configFile := ""
+	for i, arg := range os.Args[1:] {
+		if arg == "--config" && i+1 < len(os.Args[1:]) {
+			configFile = os.Args[i+2]
 		}
+	}
+
+	if configFile != "" {
+		var err error
+		appCfg, err = config.LoadFromFile(configFile)
+		if err != nil {
+			log.Fatalf("Failed to load config file: %v", err)
+		}
+	} else {
+		appCfg = config.LoadFromEnv()
 	}
 
 	devMode := os.Getenv("DEV_MODE") == "true" || os.Getenv("GIN_MODE") == "debug"
 
-	authEnabled := false
+	authEnabled := appCfg.Server.AuthEnabled
 	authSecret := ""
 
 	// Parse flags from args
@@ -50,10 +62,13 @@ func main() {
 	}
 
 	cfg := api.ServerConfig{
-		Port:        port,
-		DevMode:     devMode,
-		AuthEnabled: authEnabled,
-		AuthSecret:  authSecret,
+		Port:         appCfg.Server.Port,
+		DevMode:      devMode,
+		AuthEnabled:  authEnabled,
+		AuthSecret:   authSecret,
+		CORSOrigins:  appCfg.Server.CORSOrigins,
+		ExecConfig:   appCfg.Executor,
+		PolicyConfig: appCfg.Policy,
 	}
 
 	srv := api.NewServer(cfg)
@@ -68,7 +83,7 @@ func main() {
 		}
 	}()
 
-	fmt.Printf("Agent Sandbox API server running on :%d\n", port)
+	fmt.Printf("Agent Sandbox API server running on :%d\n", appCfg.Server.Port)
 
 	if authEnabled {
 		fmt.Printf("Auth enabled with secret: %s\n", authSecret)

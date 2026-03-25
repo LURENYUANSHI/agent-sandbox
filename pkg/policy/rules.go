@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/config"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
@@ -19,16 +20,23 @@ type BuiltinRule struct {
 	Check func(action types.Action) (types.PolicyDecision, bool)
 }
 
-// DefaultBuiltinRules returns the standard set of built-in safety rules.
+// DefaultBuiltinRules returns the standard set of built-in safety rules
+// using the default policy configuration.
 func DefaultBuiltinRules() []BuiltinRule {
-	const defaultMaxFileSize int64 = 100 * 1024 * 1024 // 100 MB
+	return BuiltinRulesFromConfig(config.Default().Policy)
+}
+
+// BuiltinRulesFromConfig returns built-in safety rules configured by PolicyConfig.
+func BuiltinRulesFromConfig(cfg config.PolicyConfig) []BuiltinRule {
+	maxFileSize := int64(cfg.MaxFileSizeMB) * 1024 * 1024
+	portLimit := cfg.PrivilegedPortLimit
 
 	return []BuiltinRule{
 		noDeleteRoot(),
 		noKillInit(),
 		noDangerousCommands(),
-		noPrivilegedPorts(),
-		maxFileSizeLimit(defaultMaxFileSize),
+		noPrivilegedPorts(portLimit),
+		maxFileSizeLimit(maxFileSize),
 		pathTraversalProtection(),
 	}
 }
@@ -171,10 +179,10 @@ func isDestructiveRm(cmd string) bool {
 	return false
 }
 
-func noPrivilegedPorts() BuiltinRule {
+func noPrivilegedPorts(limit int) BuiltinRule {
 	return BuiltinRule{
 		ID:   "no-privileged-ports",
-		Name: "Deny listening on privileged ports (< 1024)",
+		Name: fmt.Sprintf("Deny listening on privileged ports (< %d)", limit),
 		Check: func(action types.Action) (types.PolicyDecision, bool) {
 			if action.Type != types.ActionNetListen {
 				return types.PolicyDecision{}, false
@@ -183,7 +191,7 @@ func noPrivilegedPorts() BuiltinRule {
 			if !ok {
 				return types.PolicyDecision{}, false
 			}
-			if port > 0 && port < 1024 {
+			if port > 0 && port < limit {
 				return builtinDeny("no-privileged-ports",
 					fmt.Sprintf("cannot listen on privileged port %d", port)), true
 			}

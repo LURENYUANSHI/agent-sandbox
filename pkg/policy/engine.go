@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/config"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
@@ -33,6 +34,17 @@ func NewEngine() *Engine {
 			DefaultEffect: types.EffectDeny,
 		},
 		builtinRules: DefaultBuiltinRules(),
+	}
+}
+
+// NewEngineWithConfig creates a policy engine using the provided PolicyConfig.
+func NewEngineWithConfig(cfg config.PolicyConfig) *Engine {
+	return &Engine{
+		policy: &types.Policy{
+			Name:          "empty",
+			DefaultEffect: types.EffectDeny,
+		},
+		builtinRules: BuiltinRulesFromConfig(cfg),
 	}
 }
 
