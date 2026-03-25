@@ -14,10 +14,10 @@ import (
 type Status string
 
 const (
-	StatusCreated  Status = "created"
-	StatusRunning  Status = "running"
-	StatusStopped  Status = "stopped"
-	StatusError    Status = "error"
+	StatusCreated Status = "created"
+	StatusRunning Status = "running"
+	StatusStopped Status = "stopped"
+	StatusError   Status = "error"
 )
 
 // Instance is a running sandbox that executes actions under policy control.
