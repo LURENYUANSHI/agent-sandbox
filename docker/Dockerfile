@@ -35,5 +35,8 @@ COPY configs/ /etc/agent-sandbox/configs/
 
 EXPOSE 8080
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD wget -qO- http://localhost:8080/api/v1/health || exit 1
+
 ENTRYPOINT ["agent-sandbox-server"]
 CMD ["--port", "8080", "--static-dir", "/usr/share/agent-sandbox/web"]
