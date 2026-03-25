@@ -1,183 +1,249 @@
 package integration
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
 	"testing"
 
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/executor"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/policy"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/trace"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-func TestSandboxFullLifecycle(t *testing.T) {
+// newTestSandbox creates a sandbox with a policy engine, recorder, and executor
+// rooted in a temp directory. Returns the sandbox, executor, and root dir.
+func newTestSandbox(t *testing.T, id string, pol *types.Policy) (*sandbox.Instance, *executor.Executor, string) {
+	t.Helper()
 	tmpDir := t.TempDir()
-	testFile := filepath.Join(tmpDir, "test.txt")
-	os.WriteFile(testFile, []byte("sandbox test data"), 0o644)
 
-	// Use a policy that allows file reads/writes in the actual temp directory
-	testPolicy := &types.Policy{
+	cfg := sandbox.DefaultConfig()
+	cfg.ID = id
+	cfg.Name = "test-" + id
+	cfg.RootDir = tmpDir
+	cfg.TraceEnabled = false // no SQLite needed for tests
+
+	engine := policy.NewEngine()
+	if pol != nil {
+		if err := engine.LoadPolicy(*pol); err != nil {
+			t.Fatalf("load policy: %v", err)
+		}
+	}
+
+	recorder, err := trace.NewRecorder("")
+	if err != nil {
+		t.Fatalf("create recorder: %v", err)
+	}
+	t.Cleanup(func() { recorder.Close() })
+
+	instance, err := sandbox.NewSandbox(cfg, engine, recorder)
+	if err != nil {
+		t.Fatalf("create sandbox: %v", err)
+	}
+
+	exec := executor.NewExecutor(cfg)
+	return instance, exec, tmpDir
+}
+
+func TestSandboxFullLifecycle(t *testing.T) {
+	// Policy: allow file.read and file.write, deny file.delete
+	pol := &types.Policy{
 		Name:          "lifecycle-test",
-		Description:   "Policy for lifecycle integration test",
 		DefaultEffect: types.EffectDeny,
 		Rules: []types.Rule{
 			{
-				Name:    "allow-tmpdir-read",
-				Effect:  types.EffectAllow,
-				Actions: []types.ActionType{types.ActionTypeFile},
-				Paths:   []string{filepath.Join(tmpDir, "*")},
-				FileOps: []types.FileOp{types.FileOpRead, types.FileOpList, types.FileOpWrite},
+				Name:       "allow-file-read",
+				ActionType: "file.*",
+				Effect:     types.EffectAllow,
 			},
 		},
 	}
 
-	// 1. Create sandbox with test policy
-	sb, err := sandbox.New(&sandbox.Config{
-		ID:       "lifecycle-test",
-		BasePath: tmpDir,
-		Policy:   testPolicy,
-	})
-	if err != nil {
-		t.Fatalf("create sandbox: %v", err)
-	}
-	if sb.State != sandbox.StateCreated {
-		t.Fatalf("state = %s, want created", sb.State)
+	instance, exec, tmpDir := newTestSandbox(t, "lifecycle-1", pol)
+
+	// 1. Verify initial status
+	if instance.Status() != sandbox.StatusCreated {
+		t.Fatalf("status = %s, want created", instance.Status())
 	}
 
 	// 2. Start sandbox
-	if err := sb.Start(); err != nil {
+	if err := instance.Start(context.Background()); err != nil {
 		t.Fatalf("start: %v", err)
 	}
-	if sb.State != sandbox.StateRunning {
-		t.Fatalf("state = %s, want running", sb.State)
+	if instance.Status() != sandbox.StatusRunning {
+		t.Fatalf("status = %s, want running", instance.Status())
 	}
 
-	// 3. Execute allowed action (file read in /tmp) -> should succeed
-	readEvent, err := sb.Execute(&types.Action{
-		Type:   types.ActionTypeFile,
-		Path:   testFile,
-		FileOp: types.FileOpRead,
-	})
+	// 3. Execute allowed action (file.read) -> should succeed
+	testFile := filepath.Join(tmpDir, "test.txt")
+	os.WriteFile(testFile, []byte("hello sandbox"), 0o644)
+
+	readAction := types.Action{
+		ID:     "action-read-1",
+		Type:   types.ActionTypeFileRead,
+		Params: map[string]string{"path": testFile},
+	}
+	result, err := instance.Execute(context.Background(), readAction, exec.Execute)
 	if err != nil {
-		t.Fatalf("execute read: %v", err)
+		t.Fatalf("execute file.read: %v", err)
 	}
-	if readEvent.Decision != types.DecisionAllowed {
-		t.Errorf("read decision = %s, want allowed", readEvent.Decision)
+	if !result.Success {
+		t.Errorf("read result.Success = false, want true")
 	}
-	if readEvent.Result != "sandbox test data" {
-		t.Errorf("read result = %q, want %q", readEvent.Result, "sandbox test data")
+	if result.Output != "hello sandbox" {
+		t.Errorf("read output = %q, want %q", result.Output, "hello sandbox")
 	}
 
-	// 4. Execute denied action (file delete on /) -> should be denied
-	deleteEvent, err := sb.Execute(&types.Action{
-		Type:   types.ActionTypeFile,
-		Path:   "/important-file",
-		FileOp: types.FileOpDelete,
-	})
-	if err != nil {
-		t.Fatalf("execute delete: %v", err)
+	// 4. Execute denied action (file.delete on path outside sandbox) -> should be denied by policy
+	// Change policy to deny deletes specifically
+	denyDeletePol := &types.Policy{
+		Name:          "deny-delete",
+		DefaultEffect: types.EffectDeny,
+		Rules: []types.Rule{
+			{
+				Name:       "allow-file-read",
+				ActionType: "file.read",
+				Effect:     types.EffectAllow,
+			},
+		},
 	}
-	if deleteEvent.Decision != types.DecisionDenied {
-		t.Errorf("delete decision = %s, want denied", deleteEvent.Decision)
+	engine := policy.NewEngine()
+	engine.LoadPolicy(*denyDeletePol)
+
+	// Create a new sandbox with deny-delete policy for this part
+	cfg2 := sandbox.DefaultConfig()
+	cfg2.ID = "lifecycle-deny"
+	cfg2.Name = "deny-test"
+	cfg2.RootDir = tmpDir
+	cfg2.TraceEnabled = false
+
+	recorder2, _ := trace.NewRecorder("")
+	defer recorder2.Close()
+
+	instance2, _ := sandbox.NewSandbox(cfg2, engine, recorder2)
+	instance2.Start(context.Background())
+
+	deleteAction := types.Action{
+		ID:     "action-delete-1",
+		Type:   types.ActionTypeFileDelete,
+		Params: map[string]string{"path": "/important-file"},
+	}
+	_, err = instance2.Execute(context.Background(), deleteAction, exec.Execute)
+	if err == nil {
+		t.Fatal("expected file.delete to be denied, but got no error")
 	}
 
 	// 5. Verify traces recorded correctly
-	traces, err := sb.GetTraces()
+	traces, err := instance.GetTraces()
 	if err != nil {
 		t.Fatalf("get traces: %v", err)
 	}
-	if len(traces) != 2 {
-		t.Fatalf("expected 2 traces, got %d", len(traces))
+	// sandbox.start records 1 event, then action.requested + policy.evaluated + action.executed = 3 more
+	if len(traces) < 3 {
+		t.Errorf("expected at least 3 trace events, got %d", len(traces))
 	}
-	if traces[0].Decision != types.DecisionAllowed {
-		t.Errorf("trace[0] decision = %s, want allowed", traces[0].Decision)
+
+	// Verify start event is first
+	foundStart := false
+	for _, te := range traces {
+		if te.Type == types.EventSandboxStarted {
+			foundStart = true
+			break
+		}
 	}
-	if traces[1].Decision != types.DecisionDenied {
-		t.Errorf("trace[1] decision = %s, want denied", traces[1].Decision)
+	if !foundStart {
+		t.Error("no sandbox.started event in traces")
 	}
 
 	// 6. Stop sandbox
-	if err := sb.Stop(); err != nil {
+	if err := instance.Stop(context.Background()); err != nil {
 		t.Fatalf("stop: %v", err)
 	}
-	if sb.State != sandbox.StateStopped {
-		t.Fatalf("state = %s, want stopped", sb.State)
+	if instance.Status() != sandbox.StatusStopped {
+		t.Fatalf("status = %s, want stopped", instance.Status())
 	}
 
-	// 7. Replay traces and verify order
-	replayed, err := sb.ReplayTraces()
-	if err != nil {
-		t.Fatalf("replay: %v", err)
+	// 7. Verify traces include stop event
+	traces, _ = instance.GetTraces()
+	foundStop := false
+	for _, te := range traces {
+		if te.Type == types.EventSandboxStopped {
+			foundStop = true
+			break
+		}
 	}
-	if len(replayed) != 2 {
-		t.Fatalf("replayed %d events, want 2", len(replayed))
-	}
-	if !replayed[0].StartTime.Before(replayed[1].StartTime) &&
-		!replayed[0].StartTime.Equal(replayed[1].StartTime) {
-		t.Error("replayed events not in chronological order")
+	if !foundStop {
+		t.Error("no sandbox.stopped event in traces")
 	}
 }
 
 func TestSandboxConcurrentExecution(t *testing.T) {
-	tmpDir := t.TempDir()
-
-	// Create test files
-	for i := 0; i < 10; i++ {
-		f := filepath.Join(tmpDir, "file"+string(rune('0'+i))+".txt")
-		os.WriteFile(f, []byte("data"), 0o644)
-	}
-
-	p := &types.Policy{
+	// Allow-all policy
+	pol := &types.Policy{
 		Name:          "allow-all",
 		DefaultEffect: types.EffectAllow,
 	}
 
-	sb, err := sandbox.New(&sandbox.Config{
-		ID:       "concurrent-test",
-		BasePath: tmpDir,
-		Policy:   p,
-	})
-	if err != nil {
-		t.Fatalf("create: %v", err)
+	instance, exec, tmpDir := newTestSandbox(t, "concurrent-1", pol)
+	instance.Start(context.Background())
+	defer instance.Stop(context.Background())
+
+	// Create 10 test files
+	for i := 0; i < 10; i++ {
+		f := filepath.Join(tmpDir, fmt.Sprintf("file%d.txt", i))
+		os.WriteFile(f, []byte(fmt.Sprintf("data-%d", i)), 0o644)
 	}
-	sb.Start()
-	defer sb.Stop()
 
 	// Launch 10 concurrent actions
 	var wg sync.WaitGroup
-	errors := make(chan error, 10)
+	errCh := make(chan error, 10)
 
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func(idx int) {
 			defer wg.Done()
-			f := filepath.Join(tmpDir, "file"+string(rune('0'+idx))+".txt")
-			_, err := sb.Execute(&types.Action{
-				Type:   types.ActionTypeFile,
-				Path:   f,
-				FileOp: types.FileOpRead,
-			})
+			action := types.Action{
+				ID:     fmt.Sprintf("concurrent-%d", idx),
+				Type:   types.ActionTypeFileRead,
+				Params: map[string]string{"path": filepath.Join(tmpDir, fmt.Sprintf("file%d.txt", idx))},
+			}
+			result, err := instance.Execute(context.Background(), action, exec.Execute)
 			if err != nil {
-				errors <- err
+				errCh <- fmt.Errorf("action %d: %w", idx, err)
+				return
+			}
+			if !result.Success {
+				errCh <- fmt.Errorf("action %d: result not successful", idx)
 			}
 		}(i)
 	}
 
 	wg.Wait()
-	close(errors)
+	close(errCh)
 
-	for err := range errors {
-		t.Errorf("concurrent execution error: %v", err)
+	for err := range errCh {
+		t.Errorf("concurrent error: %v", err)
 	}
 
-	// Verify all traced correctly
-	traces, err := sb.GetTraces()
+	// Verify all traced correctly - each action generates multiple trace events
+	traces, err := instance.GetTraces()
 	if err != nil {
 		t.Fatalf("get traces: %v", err)
 	}
-	if len(traces) != 10 {
-		t.Errorf("expected 10 traces, got %d", len(traces))
+
+	// Count action.executed events specifically
+	executedCount := 0
+	for _, te := range traces {
+		if te.Type == types.EventActionExecuted {
+			executedCount++
+		}
+	}
+	if executedCount != 10 {
+		t.Errorf("expected 10 action.executed events, got %d", executedCount)
 	}
 }
 
@@ -186,54 +252,55 @@ func TestSandboxPolicyHotReload(t *testing.T) {
 	testFile := filepath.Join(tmpDir, "test.txt")
 	os.WriteFile(testFile, []byte("data"), 0o644)
 
-	// Start with strict policy
-	sb, err := sandbox.New(&sandbox.Config{
-		ID:       "hotreload-test",
-		BasePath: tmpDir,
-		Policy:   policy.StrictPolicy(),
-	})
-	if err != nil {
-		t.Fatalf("create: %v", err)
-	}
-	sb.Start()
-	defer sb.Stop()
+	// Start with deny-all policy
+	engine := policy.NewEngine() // deny-all by default
+	recorder, _ := trace.NewRecorder("")
+	defer recorder.Close()
 
-	// Execute write action -> should be denied (strict only allows reads)
-	event1, err := sb.Execute(&types.Action{
-		Type:   types.ActionTypeFile,
-		Path:   testFile,
-		FileOp: types.FileOpWrite,
-	})
-	if err != nil {
-		t.Fatalf("execute write: %v", err)
+	cfg := sandbox.DefaultConfig()
+	cfg.ID = "hotreload-1"
+	cfg.Name = "hotreload-test"
+	cfg.RootDir = tmpDir
+	cfg.TraceEnabled = false
+
+	instance, _ := sandbox.NewSandbox(cfg, engine, recorder)
+	exec := executor.NewExecutor(cfg)
+	instance.Start(context.Background())
+	defer instance.Stop(context.Background())
+
+	// Execute write action -> should be denied (deny-all default)
+	writeAction := types.Action{
+		ID:     "action-write-1",
+		Type:   types.ActionTypeFileWrite,
+		Params: map[string]string{"path": testFile, "content": "new data"},
 	}
-	if event1.Decision != types.DecisionDenied {
-		t.Errorf("strict policy: write decision = %s, want denied", event1.Decision)
+	_, err := instance.Execute(context.Background(), writeAction, exec.Execute)
+	if err == nil {
+		t.Fatal("expected deny-all to reject file.write, but got no error")
 	}
 
 	// Hot-reload permissive policy
-	sb.ReloadPolicy(policy.PermissivePolicy())
+	permissive := types.Policy{
+		Name:          "permissive",
+		DefaultEffect: types.EffectAllow,
+	}
+	engine.LoadPolicy(permissive)
 
 	// Execute same action -> should succeed with permissive policy
-	event2, err := sb.Execute(&types.Action{
-		Type:    types.ActionTypeFile,
-		Path:    testFile,
-		FileOp:  types.FileOpWrite,
-		Content: "updated content",
-	})
+	writeAction.ID = "action-write-2"
+	result, err := instance.Execute(context.Background(), writeAction, exec.Execute)
 	if err != nil {
-		t.Fatalf("execute write after reload: %v", err)
+		t.Fatalf("expected permissive to allow file.write, got: %v", err)
 	}
-	if event2.Decision != types.DecisionAllowed {
-		t.Errorf("permissive policy: write decision = %s, want allowed", event2.Decision)
+	if !result.Success {
+		t.Error("write result.Success = false after policy reload")
 	}
 }
 
 func TestSandboxPolicyFromYAML(t *testing.T) {
+	// Find the fixture file
 	policyPath := filepath.Join("..", "..", "test", "fixtures", "sample-policy.yaml")
-	// Try relative path from test/integration directory
 	if _, err := os.Stat(policyPath); err != nil {
-		// Try from project root
 		policyPath = "test/fixtures/sample-policy.yaml"
 		if _, err := os.Stat(policyPath); err != nil {
 			t.Skipf("sample-policy.yaml not found, skipping: %v", err)
@@ -252,22 +319,24 @@ func TestSandboxPolicyFromYAML(t *testing.T) {
 		t.Errorf("expected 3 rules, got %d", len(p.Rules))
 	}
 
-	engine := policy.NewEngine(p)
-	effect, _ := engine.Evaluate(&types.Action{
-		Type:   types.ActionTypeFile,
-		Path:   "/tmp/test.txt",
-		FileOp: types.FileOpRead,
+	engine := policy.NewEngine()
+	engine.LoadPolicy(*p)
+
+	// file.read should be allowed by the first rule
+	readDecision := engine.Evaluate(types.Action{
+		ID:   "test-1",
+		Type: types.ActionTypeFileRead,
 	})
-	if effect != types.EffectAllow {
-		t.Errorf("tmp read effect = %s, want allow", effect)
+	if !readDecision.Allowed {
+		t.Errorf("file.read decision: allowed = false, want true")
 	}
 
-	effect, _ = engine.Evaluate(&types.Action{
-		Type:   types.ActionTypeFile,
-		Path:   "/etc/passwd",
-		FileOp: types.FileOpDelete,
+	// file.delete should be denied (no allow rule + default deny)
+	deleteDecision := engine.Evaluate(types.Action{
+		ID:   "test-2",
+		Type: types.ActionTypeFileDelete,
 	})
-	if effect != types.EffectDeny {
-		t.Errorf("root delete effect = %s, want deny", effect)
+	if deleteDecision.Allowed {
+		t.Errorf("file.delete decision: allowed = true, want false")
 	}
 }

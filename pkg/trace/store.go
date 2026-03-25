@@ -1,68 +1,96 @@
 package trace
 
 import (
+	"database/sql"
+	"encoding/json"
 	"fmt"
-	"sync"
+	"time"
+
+	_ "modernc.org/sqlite"
 
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-// Store is an in-memory trace event store.
+// Store persists trace events to SQLite.
 type Store struct {
-	events map[string][]*types.TraceEvent // keyed by sandbox ID
-	mu     sync.RWMutex
+	db *sql.DB
 }
 
-// NewStore creates a new in-memory trace store.
-func NewStore() *Store {
-	return &Store{
-		events: make(map[string][]*types.TraceEvent),
+// NewStore opens (or creates) the SQLite database at path.
+func NewStore(path string) (*Store, error) {
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		return nil, fmt.Errorf("open sqlite %s: %w", path, err)
 	}
+	if err := migrate(db); err != nil {
+		db.Close()
+		return nil, err
+	}
+	return &Store{db: db}, nil
 }
 
-// Save persists a trace event.
-func (s *Store) Save(event *types.TraceEvent) error {
-	if event.SandboxID == "" {
-		return fmt.Errorf("sandbox_id is required")
+func migrate(db *sql.DB) error {
+	_, err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS trace_events (
+			id         TEXT PRIMARY KEY,
+			sandbox_id TEXT NOT NULL,
+			type       TEXT NOT NULL,
+			timestamp  DATETIME NOT NULL,
+			action_id  TEXT,
+			data       TEXT,
+			duration   INTEGER
+		);
+		CREATE INDEX IF NOT EXISTS idx_trace_sandbox ON trace_events(sandbox_id);
+	`)
+	if err != nil {
+		return fmt.Errorf("migrate trace_events: %w", err)
 	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.events[event.SandboxID] = append(s.events[event.SandboxID], event)
 	return nil
 }
 
-// GetBySandbox returns all events for a sandbox, ordered by start time.
-func (s *Store) GetBySandbox(sandboxID string) ([]*types.TraceEvent, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	events := s.events[sandboxID]
-	result := make([]*types.TraceEvent, len(events))
-	copy(result, events)
-	return result, nil
+// Save inserts a trace event.
+func (s *Store) Save(event types.TraceEvent) error {
+	dataJSON, _ := json.Marshal(event.Data)
+	_, err := s.db.Exec(
+		`INSERT OR REPLACE INTO trace_events (id, sandbox_id, type, timestamp, action_id, data, duration)
+		 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		event.ID, event.SandboxID, string(event.Type), event.Timestamp,
+		event.ActionID, string(dataJSON), int64(event.Duration),
+	)
+	if err != nil {
+		return fmt.Errorf("save trace event: %w", err)
+	}
+	return nil
 }
 
-// GetByTrace returns all events with a specific trace ID.
-func (s *Store) GetByTrace(traceID string) ([]*types.TraceEvent, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	var result []*types.TraceEvent
-	for _, events := range s.events {
-		for _, e := range events {
-			if e.TraceID == traceID {
-				result = append(result, e)
-			}
+// Load retrieves all events for a sandbox, ordered by timestamp.
+func (s *Store) Load(sandboxID string) ([]types.TraceEvent, error) {
+	rows, err := s.db.Query(
+		`SELECT id, sandbox_id, type, timestamp, action_id, data, duration
+		 FROM trace_events WHERE sandbox_id = ? ORDER BY timestamp`, sandboxID)
+	if err != nil {
+		return nil, fmt.Errorf("query trace events: %w", err)
+	}
+	defer rows.Close()
+
+	var events []types.TraceEvent
+	for rows.Next() {
+		var e types.TraceEvent
+		var dataJSON string
+		var dur int64
+		if err := rows.Scan(&e.ID, &e.SandboxID, &e.Type, &e.Timestamp, &e.ActionID, &dataJSON, &dur); err != nil {
+			return nil, fmt.Errorf("scan trace event: %w", err)
 		}
+		e.Duration = time.Duration(dur)
+		if dataJSON != "" {
+			json.Unmarshal([]byte(dataJSON), &e.Data)
+		}
+		events = append(events, e)
 	}
-	return result, nil
+	return events, rows.Err()
 }
 
-// GetAll returns every stored event.
-func (s *Store) GetAll() ([]*types.TraceEvent, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	var result []*types.TraceEvent
-	for _, events := range s.events {
-		result = append(result, events...)
-	}
-	return result, nil
+// Close closes the database.
+func (s *Store) Close() error {
+	return s.db.Close()
 }

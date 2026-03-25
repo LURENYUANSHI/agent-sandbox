@@ -1,101 +1,379 @@
 package executor
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
+	"time"
 
-	"github.com/LURENYUANSHI/agent-sandbox/pkg/policy"
-	"github.com/LURENYUANSHI/agent-sandbox/pkg/trace"
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-func TestExecuteAllowedFileRead(t *testing.T) {
-	tmpDir := t.TempDir()
-	testFile := filepath.Join(tmpDir, "test.txt")
-	os.WriteFile(testFile, []byte("hello"), 0o644)
-
-	p := &types.Policy{
-		Name:          "test",
-		DefaultEffect: types.EffectAllow,
-	}
-	engine := policy.NewEngine(p)
-	store := trace.NewStore()
-	recorder := trace.NewRecorder(store)
-	exec := NewExecutor(engine, recorder, tmpDir)
-
-	action := &types.Action{
-		Type:   types.ActionTypeFile,
-		Path:   testFile,
-		FileOp: types.FileOpRead,
-	}
-
-	event, err := exec.Execute("sb-1", action)
-	if err != nil {
-		t.Fatalf("execute: %v", err)
-	}
-	if event.Decision != types.DecisionAllowed {
-		t.Errorf("decision = %s, want allowed", event.Decision)
-	}
-	if event.Result != "hello" {
-		t.Errorf("result = %q, want %q", event.Result, "hello")
+func testConfig(t *testing.T) sandbox.Config {
+	t.Helper()
+	return sandbox.Config{
+		ID:             "test-exec",
+		RootDir:        t.TempDir(),
+		MaxMemoryMB:    512,
+		MaxCPUPercent:  50,
+		MaxDiskMB:      1024,
+		MaxProcesses:   10,
+		TimeoutSeconds: 5,
+		NetworkEnabled: false,
 	}
 }
 
-func TestExecuteDeniedAction(t *testing.T) {
-	p := &types.Policy{
-		Name:          "deny-all",
-		DefaultEffect: types.EffectDeny,
-	}
-	engine := policy.NewEngine(p)
-	store := trace.NewStore()
-	recorder := trace.NewRecorder(store)
-	exec := NewExecutor(engine, recorder, t.TempDir())
+// --- Filesystem tests ---
 
-	action := &types.Action{
-		Type:   types.ActionTypeFile,
-		Path:   "/etc/passwd",
-		FileOp: types.FileOpDelete,
-	}
+func TestFilesystem_ReadWriteDelete(t *testing.T) {
+	cfg := testConfig(t)
+	fs := NewFilesystemExecutor(cfg.RootDir)
+	ctx := context.Background()
 
-	event, err := exec.Execute("sb-1", action)
+	// Write a file
+	writeAction := types.Action{
+		ID:   "w1",
+		Type: types.ActionTypeFileWrite,
+		Params: map[string]string{
+			"path":    "hello.txt",
+			"content": "hello world",
+		},
+	}
+	result, err := fs.ExecuteFileWrite(ctx, writeAction)
 	if err != nil {
-		t.Fatalf("execute: %v", err)
+		t.Fatalf("FileWrite: %v", err)
 	}
-	if event.Decision != types.DecisionDenied {
-		t.Errorf("decision = %s, want denied", event.Decision)
+	if !result.Success {
+		t.Error("expected write success")
+	}
+
+	// Read it back
+	readAction := types.Action{
+		ID:   "r1",
+		Type: types.ActionTypeFileRead,
+		Params: map[string]string{
+			"path": "hello.txt",
+		},
+	}
+	result, err = fs.ExecuteFileRead(ctx, readAction)
+	if err != nil {
+		t.Fatalf("FileRead: %v", err)
+	}
+	if result.Output != "hello world" {
+		t.Errorf("expected 'hello world', got %q", result.Output)
+	}
+
+	// Delete it
+	delAction := types.Action{
+		ID:   "d1",
+		Type: types.ActionTypeFileDelete,
+		Params: map[string]string{
+			"path": "hello.txt",
+		},
+	}
+	result, err = fs.ExecuteFileDelete(ctx, delAction)
+	if err != nil {
+		t.Fatalf("FileDelete: %v", err)
+	}
+	if !result.Success {
+		t.Error("expected delete success")
+	}
+
+	// Verify deleted
+	_, err = fs.ExecuteFileRead(ctx, readAction)
+	if err == nil {
+		t.Error("expected error reading deleted file")
 	}
 }
 
-func TestExecuteFileWrite(t *testing.T) {
-	tmpDir := t.TempDir()
+func TestFilesystem_PathEscape(t *testing.T) {
+	cfg := testConfig(t)
+	fs := NewFilesystemExecutor(cfg.RootDir)
+	ctx := context.Background()
 
-	p := &types.Policy{
-		Name:          "allow-all",
-		DefaultEffect: types.EffectAllow,
+	// Attempt directory traversal
+	escapeAction := types.Action{
+		ID:   "escape",
+		Type: types.ActionTypeFileRead,
+		Params: map[string]string{
+			"path": "../../etc/passwd",
+		},
 	}
-	engine := policy.NewEngine(p)
-	store := trace.NewStore()
-	recorder := trace.NewRecorder(store)
-	exec := NewExecutor(engine, recorder, tmpDir)
-
-	action := &types.Action{
-		Type:    types.ActionTypeFile,
-		Path:    filepath.Join(tmpDir, "output.txt"),
-		FileOp:  types.FileOpWrite,
-		Content: "written by executor",
+	_, err := fs.ExecuteFileRead(ctx, escapeAction)
+	if err == nil {
+		t.Error("expected error for path escape attempt")
 	}
+}
 
-	event, err := exec.Execute("sb-1", action)
+func TestFilesystem_NestedDirectories(t *testing.T) {
+	cfg := testConfig(t)
+	fs := NewFilesystemExecutor(cfg.RootDir)
+	ctx := context.Background()
+
+	writeAction := types.Action{
+		ID:   "nested",
+		Type: types.ActionTypeFileWrite,
+		Params: map[string]string{
+			"path":    "a/b/c/deep.txt",
+			"content": "nested content",
+		},
+	}
+	_, err := fs.ExecuteFileWrite(ctx, writeAction)
 	if err != nil {
-		t.Fatalf("execute: %v", err)
-	}
-	if event.Decision != types.DecisionAllowed {
-		t.Errorf("decision = %s, want allowed", event.Decision)
+		t.Fatalf("nested write: %v", err)
 	}
 
-	data, _ := os.ReadFile(filepath.Join(tmpDir, "output.txt"))
-	if string(data) != "written by executor" {
-		t.Errorf("file content = %q, want %q", string(data), "written by executor")
+	// Verify file exists
+	data, err := os.ReadFile(filepath.Join(cfg.RootDir, "a", "b", "c", "deep.txt"))
+	if err != nil {
+		t.Fatalf("read nested file: %v", err)
+	}
+	if string(data) != "nested content" {
+		t.Errorf("got %q", string(data))
+	}
+}
+
+func TestFilesystem_DeleteSandboxRoot(t *testing.T) {
+	cfg := testConfig(t)
+	fs := NewFilesystemExecutor(cfg.RootDir)
+	ctx := context.Background()
+
+	delAction := types.Action{
+		ID:   "del-root",
+		Type: types.ActionTypeFileDelete,
+		Params: map[string]string{
+			"path": ".",
+		},
+	}
+	_, err := fs.ExecuteFileDelete(ctx, delAction)
+	if err == nil {
+		t.Error("expected error when deleting sandbox root")
+	}
+}
+
+func TestFilesystem_MissingParams(t *testing.T) {
+	cfg := testConfig(t)
+	fs := NewFilesystemExecutor(cfg.RootDir)
+	ctx := context.Background()
+
+	_, err := fs.ExecuteFileRead(ctx, types.Action{ID: "x", Params: map[string]string{}})
+	if err == nil {
+		t.Error("expected error for missing path param")
+	}
+
+	_, err = fs.ExecuteFileWrite(ctx, types.Action{ID: "x", Params: map[string]string{}})
+	if err == nil {
+		t.Error("expected error for missing path param on write")
+	}
+
+	_, err = fs.ExecuteFileDelete(ctx, types.Action{ID: "x", Params: map[string]string{}})
+	if err == nil {
+		t.Error("expected error for missing path param on delete")
+	}
+}
+
+// --- Process tests ---
+
+func TestProcess_SimpleCommand(t *testing.T) {
+	cfg := testConfig(t)
+	proc := NewProcessExecutor(cfg.RootDir, 5*time.Second)
+	ctx := context.Background()
+
+	var action types.Action
+	if runtime.GOOS == "windows" {
+		action = types.Action{
+			ID:   "echo",
+			Type: types.ActionTypeProcess,
+			Params: map[string]string{
+				"command": "cmd",
+				"args":    "/c echo hello",
+			},
+		}
+	} else {
+		action = types.Action{
+			ID:   "echo",
+			Type: types.ActionTypeProcess,
+			Params: map[string]string{
+				"command": "echo",
+				"args":    "hello",
+			},
+		}
+	}
+
+	result, err := proc.ExecuteProcess(ctx, action)
+	if err != nil {
+		t.Fatalf("ExecuteProcess: %v", err)
+	}
+	if !result.Success {
+		t.Errorf("expected success, output: %s", result.Output)
+	}
+}
+
+func TestProcess_Timeout(t *testing.T) {
+	cfg := testConfig(t)
+	proc := NewProcessExecutor(cfg.RootDir, 500*time.Millisecond)
+	ctx := context.Background()
+
+	var action types.Action
+	if runtime.GOOS == "windows" {
+		action = types.Action{
+			ID:   "sleep",
+			Type: types.ActionTypeProcess,
+			Params: map[string]string{
+				"command": "cmd",
+				"args":    "/c ping -n 3 127.0.0.1",
+			},
+		}
+	} else {
+		action = types.Action{
+			ID:   "sleep",
+			Type: types.ActionTypeProcess,
+			Params: map[string]string{
+				"command": "sleep",
+				"args":    "10",
+			},
+		}
+	}
+
+	result, err := proc.ExecuteProcess(ctx, action)
+	if err != nil {
+		t.Fatalf("ExecuteProcess: %v", err)
+	}
+	if result.Success {
+		t.Error("expected timeout failure")
+	}
+}
+
+func TestProcess_Shell(t *testing.T) {
+	cfg := testConfig(t)
+	proc := NewProcessExecutor(cfg.RootDir, 5*time.Second)
+	ctx := context.Background()
+
+	var cmd string
+	if runtime.GOOS == "windows" {
+		cmd = "echo hello"
+	} else {
+		cmd = "echo hello"
+	}
+
+	action := types.Action{
+		ID:   "shell",
+		Type: types.ActionTypeShell,
+		Params: map[string]string{
+			"command": cmd,
+		},
+	}
+
+	result, err := proc.ExecuteShell(ctx, action)
+	if err != nil {
+		t.Fatalf("ExecuteShell: %v", err)
+	}
+	if !result.Success {
+		t.Errorf("expected success, got exit code %d", result.ExitCode)
+	}
+}
+
+// --- Network tests ---
+
+func TestNetwork_DisabledRejects(t *testing.T) {
+	net := NewNetworkExecutor(false)
+	ctx := context.Background()
+
+	action := types.Action{
+		ID:   "http",
+		Type: types.ActionTypeNetHTTP,
+		Params: map[string]string{
+			"url": "http://example.com",
+		},
+	}
+	_, err := net.ExecuteNetHTTP(ctx, action)
+	if err == nil {
+		t.Error("expected error when network is disabled")
+	}
+
+	connAction := types.Action{
+		ID:   "conn",
+		Type: types.ActionTypeNetConnect,
+		Params: map[string]string{
+			"host": "example.com",
+			"port": "80",
+		},
+	}
+	_, err = net.ExecuteNetConnect(ctx, connAction)
+	if err == nil {
+		t.Error("expected error when network is disabled")
+	}
+}
+
+func TestNetwork_MissingParams(t *testing.T) {
+	net := NewNetworkExecutor(true)
+	ctx := context.Background()
+
+	_, err := net.ExecuteNetHTTP(ctx, types.Action{ID: "x", Params: map[string]string{}})
+	if err == nil {
+		t.Error("expected error for missing url")
+	}
+
+	_, err = net.ExecuteNetConnect(ctx, types.Action{ID: "x", Params: map[string]string{"host": "a"}})
+	if err == nil {
+		t.Error("expected error for missing port")
+	}
+}
+
+// --- Executor dispatch tests ---
+
+func TestExecutor_Dispatch(t *testing.T) {
+	cfg := testConfig(t)
+	exec := NewExecutor(cfg)
+	ctx := context.Background()
+
+	// Write a file through the executor
+	writeAction := types.Action{
+		ID:   "dispatch-write",
+		Type: types.ActionTypeFileWrite,
+		Params: map[string]string{
+			"path":    "dispatched.txt",
+			"content": "via executor",
+		},
+	}
+	result, err := exec.Execute(ctx, writeAction)
+	if err != nil {
+		t.Fatalf("Execute file write: %v", err)
+	}
+	if !result.Success {
+		t.Error("expected success")
+	}
+
+	// Read it back
+	readAction := types.Action{
+		ID:   "dispatch-read",
+		Type: types.ActionTypeFileRead,
+		Params: map[string]string{
+			"path": "dispatched.txt",
+		},
+	}
+	result, err = exec.Execute(ctx, readAction)
+	if err != nil {
+		t.Fatalf("Execute file read: %v", err)
+	}
+	if result.Output != "via executor" {
+		t.Errorf("expected 'via executor', got %q", result.Output)
+	}
+}
+
+func TestExecutor_UnsupportedType(t *testing.T) {
+	cfg := testConfig(t)
+	exec := NewExecutor(cfg)
+
+	action := types.Action{
+		ID:   "bad",
+		Type: "unknown.type",
+	}
+	_, err := exec.Execute(context.Background(), action)
+	if err == nil {
+		t.Error("expected error for unsupported action type")
 	}
 }

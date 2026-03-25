@@ -1,93 +1,61 @@
 package executor
 
 import (
+	"context"
 	"fmt"
 	"time"
 
-	"github.com/LURENYUANSHI/agent-sandbox/pkg/policy"
-	"github.com/LURENYUANSHI/agent-sandbox/pkg/trace"
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-// Executor runs actions within a sandbox, checking policy and recording traces.
+// Executor dispatches actions to the appropriate handler based on ActionType.
 type Executor struct {
-	policyEngine *policy.Engine
-	recorder     *trace.Recorder
-	basePath     string
-	nextID       int
+	config sandbox.Config
+	fs     *FilesystemExecutor
+	net    *NetworkExecutor
+	proc   *ProcessExecutor
 }
 
-// NewExecutor creates an executor bound to a policy engine and trace recorder.
-func NewExecutor(engine *policy.Engine, recorder *trace.Recorder, basePath string) *Executor {
+// NewExecutor creates an executor bound to a sandbox configuration.
+func NewExecutor(config sandbox.Config) *Executor {
 	return &Executor{
-		policyEngine: engine,
-		recorder:     recorder,
-		basePath:     basePath,
+		config: config,
+		fs:     NewFilesystemExecutor(config.RootDir),
+		net:    NewNetworkExecutor(config.NetworkEnabled),
+		proc:   NewProcessExecutor(config.RootDir, time.Duration(config.TimeoutSeconds)*time.Second),
 	}
 }
 
-// Execute runs an action after policy evaluation, recording the trace event.
-func (e *Executor) Execute(sandboxID string, action *types.Action) (*types.TraceEvent, error) {
-	e.nextID++
-	startTime := time.Now()
+// Execute dispatches the action to the correct sub-executor.
+func (e *Executor) Execute(ctx context.Context, action types.Action) (*types.ActionResult, error) {
+	start := time.Now()
 
-	if action.Timestamp.IsZero() {
-		action.Timestamp = startTime
-	}
+	var result *types.ActionResult
+	var err error
 
-	effect, reason := e.policyEngine.Evaluate(action)
-
-	event := &types.TraceEvent{
-		ID:        fmt.Sprintf("evt-%s-%d", sandboxID, e.nextID),
-		TraceID:   fmt.Sprintf("trace-%s", sandboxID),
-		SandboxID: sandboxID,
-		Action:    *action,
-		Reason:    reason,
-		StartTime: startTime,
-	}
-
-	if effect == types.EffectDeny {
-		event.Decision = types.DecisionDenied
-		event.Error = fmt.Sprintf("action denied by rule: %s", reason)
-		event.EndTime = time.Now()
-		event.DurationMs = event.EndTime.Sub(event.StartTime).Milliseconds()
-		if err := e.recorder.Record(event); err != nil {
-			return nil, fmt.Errorf("recording denied event: %w", err)
-		}
-		return event, nil
-	}
-
-	event.Decision = types.DecisionAllowed
-
-	var execErr error
 	switch action.Type {
-	case types.ActionTypeFile:
-		event.Result, execErr = executeFile(e.basePath, action)
-	case types.ActionTypeNetwork:
-		event.Result, execErr = executeNetwork(action)
+	case types.ActionTypeFileRead:
+		result, err = e.fs.ExecuteFileRead(ctx, action)
+	case types.ActionTypeFileWrite:
+		result, err = e.fs.ExecuteFileWrite(ctx, action)
+	case types.ActionTypeFileDelete:
+		result, err = e.fs.ExecuteFileDelete(ctx, action)
+	case types.ActionTypeNetHTTP:
+		result, err = e.net.ExecuteNetHTTP(ctx, action)
+	case types.ActionTypeNetConnect:
+		result, err = e.net.ExecuteNetConnect(ctx, action)
 	case types.ActionTypeProcess:
-		event.Result, execErr = executeProcess(action)
+		result, err = e.proc.ExecuteProcess(ctx, action)
 	case types.ActionTypeShell:
-		event.Result, execErr = executeProcess(action)
+		result, err = e.proc.ExecuteShell(ctx, action)
 	default:
-		execErr = fmt.Errorf("unknown action type: %s", action.Type)
+		return nil, fmt.Errorf("unsupported action type: %s", action.Type)
 	}
 
-	if execErr != nil {
-		event.Error = execErr.Error()
+	if err != nil {
+		return nil, err
 	}
-
-	event.EndTime = time.Now()
-	event.DurationMs = event.EndTime.Sub(event.StartTime).Milliseconds()
-
-	if err := e.recorder.Record(event); err != nil {
-		return nil, fmt.Errorf("recording event: %w", err)
-	}
-
-	return event, nil
-}
-
-// ReloadPolicy hot-reloads the policy engine with a new policy.
-func (e *Executor) ReloadPolicy(p *types.Policy) {
-	e.policyEngine.LoadPolicy(p)
+	result.Duration = time.Since(start)
+	return result, nil
 }

@@ -1,24 +1,5 @@
 # Coding agent policy - allows file and process operations, restricts network
 name: coding-agent
 description: Policy for coding agents with filesystem and process access
-default_effect: deny
 
-rules:
-  - name: allow-workspace-files
-    effect: allow
-    actions: [file]
-    paths: ["/workspace/*", "/tmp/*"]
-    file_ops: [read, write, list]
-
-  - name: allow-process-execution
-    effect: allow
-    actions: [process, shell]
-
-  - name: allow-localhost-network
-    effect: allow
-    actions: [network]
-    hosts: ["localhost", "127.0.0.1"]
-
-  - name: deny-external-network
-    effect: deny
-    actions: [network]
+rules: []

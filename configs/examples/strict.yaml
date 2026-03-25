@@ -1,11 +1,5 @@
 # Strict security policy - denies most operations
 name: strict
 description: Strict policy that denies most operations
-default_effect: deny
 
-rules:
-  - name: allow-tmp-read-only
-    effect: allow
-    actions: [file]
-    paths: ["/tmp/*"]
-    file_ops: [read]
+rules: []

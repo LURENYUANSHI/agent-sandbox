@@ -2,174 +2,138 @@ package policy
 
 import (
 	"testing"
-	"time"
 
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-func TestEvaluate(t *testing.T) {
+func TestEngine_DefaultDeny(t *testing.T) {
+	e := NewEngine()
+	action := types.Action{Type: types.ActionTypeFileRead, Params: map[string]string{"path": "/tmp/x"}}
+	d := e.Evaluate(action)
+	if d.Allowed {
+		t.Error("expected deny by default")
+	}
+}
+
+func TestEngine_AllowRule(t *testing.T) {
+	e := NewEngine()
+	e.LoadPolicy(types.Policy{
+		Name:          "test",
+		DefaultEffect: types.EffectDeny,
+		Rules: []types.Rule{
+			{Name: "allow-reads", ActionType: types.ActionTypeFileRead, Effect: types.EffectAllow},
+		},
+	})
+
+	d := e.Evaluate(types.Action{Type: types.ActionTypeFileRead})
+	if !d.Allowed {
+		t.Error("expected allow for file.read")
+	}
+
+	d = e.Evaluate(types.Action{Type: types.ActionTypeFileWrite})
+	if d.Allowed {
+		t.Error("expected deny for file.write")
+	}
+}
+
+func TestEngine_WildcardMatch(t *testing.T) {
+	e := NewEngine()
+	e.LoadPolicy(types.Policy{
+		Name:          "wildcard",
+		DefaultEffect: types.EffectDeny,
+		Rules: []types.Rule{
+			{Name: "allow-all-file", ActionType: "file.*", Effect: types.EffectAllow},
+		},
+	})
+
 	tests := []struct {
-		name       string
-		policy     *types.Policy
-		action     *types.Action
-		wantEffect types.Effect
+		actionType types.ActionType
+		want       bool
 	}{
-		{
-			name:   "default policy allows tmp read",
-			policy: DefaultPolicy(),
-			action: &types.Action{
-				Type:   types.ActionTypeFile,
-				Path:   "/tmp/test.txt",
-				FileOp: types.FileOpRead,
-			},
-			wantEffect: types.EffectAllow,
-		},
-		{
-			name:   "default policy denies root delete",
-			policy: DefaultPolicy(),
-			action: &types.Action{
-				Type:   types.ActionTypeFile,
-				Path:   "/etc/passwd",
-				FileOp: types.FileOpDelete,
-			},
-			wantEffect: types.EffectDeny,
-		},
-		{
-			name:   "strict policy denies tmp write",
-			policy: StrictPolicy(),
-			action: &types.Action{
-				Type:   types.ActionTypeFile,
-				Path:   "/tmp/test.txt",
-				FileOp: types.FileOpWrite,
-			},
-			wantEffect: types.EffectDeny,
-		},
-		{
-			name:   "permissive policy allows network",
-			policy: PermissivePolicy(),
-			action: &types.Action{
-				Type: types.ActionTypeNetwork,
-				Host: "example.com",
-				Port: 443,
-			},
-			wantEffect: types.EffectAllow,
-		},
-		{
-			name:   "permissive policy denies file delete at root",
-			policy: PermissivePolicy(),
-			action: &types.Action{
-				Type:   types.ActionTypeFile,
-				Path:   "/important",
-				FileOp: types.FileOpDelete,
-			},
-			wantEffect: types.EffectDeny,
-		},
+		{types.ActionTypeFileRead, true},
+		{types.ActionTypeFileWrite, true},
+		{types.ActionTypeFileDelete, true},
+		{types.ActionTypeNetHTTP, false},
+		{types.ActionTypeProcess, false},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			engine := NewEngine(tt.policy)
-			tt.action.Timestamp = time.Now()
-			effect, _ := engine.Evaluate(tt.action)
-			if effect != tt.wantEffect {
-				t.Errorf("got %s, want %s", effect, tt.wantEffect)
-			}
-		})
+		d := e.Evaluate(types.Action{Type: tt.actionType})
+		if d.Allowed != tt.want {
+			t.Errorf("action %s: got allowed=%t, want %t", tt.actionType, d.Allowed, tt.want)
+		}
 	}
 }
 
-func TestLoadPolicy(t *testing.T) {
-	engine := NewEngine(StrictPolicy())
+func TestEngine_ConditionMatch(t *testing.T) {
+	e := NewEngine()
+	e.LoadPolicy(types.Policy{
+		Name:          "conditional",
+		DefaultEffect: types.EffectDeny,
+		Rules: []types.Rule{
+			{
+				Name:       "allow-tmp-reads",
+				ActionType: types.ActionTypeFileRead,
+				Effect:     types.EffectAllow,
+				Conditions: map[string]string{"path": "/tmp/*"},
+			},
+		},
+	})
 
-	action := &types.Action{
-		Type:      types.ActionTypeFile,
-		Path:      "/tmp/test.txt",
-		FileOp:    types.FileOpWrite,
-		Timestamp: time.Now(),
+	d := e.Evaluate(types.Action{
+		Type:   types.ActionTypeFileRead,
+		Params: map[string]string{"path": "/tmp/foo"},
+	})
+	if !d.Allowed {
+		t.Error("expected allow for /tmp/foo")
 	}
 
-	effect, _ := engine.Evaluate(action)
-	if effect != types.EffectDeny {
-		t.Fatalf("strict policy should deny write, got %s", effect)
-	}
-
-	engine.LoadPolicy(PermissivePolicy())
-	effect, _ = engine.Evaluate(action)
-	if effect != types.EffectAllow {
-		t.Fatalf("permissive policy should allow write, got %s", effect)
+	d = e.Evaluate(types.Action{
+		Type:   types.ActionTypeFileRead,
+		Params: map[string]string{"path": "/etc/passwd"},
+	})
+	if d.Allowed {
+		t.Error("expected deny for /etc/passwd")
 	}
 }
 
-func TestParsePolicy(t *testing.T) {
+func TestEngine_DefaultAllow(t *testing.T) {
+	e := NewEngine()
+	e.LoadPolicy(types.Policy{
+		Name:          "permissive",
+		DefaultEffect: types.EffectAllow,
+	})
+
+	d := e.Evaluate(types.Action{Type: types.ActionTypeProcess})
+	if !d.Allowed {
+		t.Error("expected allow with default_effect=allow")
+	}
+}
+
+func TestParse(t *testing.T) {
 	yaml := []byte(`
 name: test-policy
 description: A test policy
-default_effect: deny
+default_effect: allow
 rules:
-  - name: allow-file-read
-    effect: allow
-    actions: [file]
-    paths: ["/tmp/*"]
-    file_ops: [read]
+  - name: deny-deletes
+    action_type: file.delete
+    effect: deny
 `)
 	p, err := Parse(yaml)
 	if err != nil {
-		t.Fatalf("parse error: %v", err)
+		t.Fatalf("Parse: %v", err)
 	}
 	if p.Name != "test-policy" {
-		t.Errorf("name = %s, want test-policy", p.Name)
+		t.Errorf("name = %q", p.Name)
+	}
+	if p.DefaultEffect != types.EffectAllow {
+		t.Errorf("default_effect = %q", p.DefaultEffect)
 	}
 	if len(p.Rules) != 1 {
 		t.Fatalf("expected 1 rule, got %d", len(p.Rules))
 	}
-	if p.Rules[0].Effect != types.EffectAllow {
-		t.Errorf("rule effect = %s, want allow", p.Rules[0].Effect)
-	}
-}
-
-func TestValidate(t *testing.T) {
-	tests := []struct {
-		name    string
-		policy  *types.Policy
-		wantErr bool
-	}{
-		{
-			name:    "valid policy",
-			policy:  DefaultPolicy(),
-			wantErr: false,
-		},
-		{
-			name:    "missing name",
-			policy:  &types.Policy{DefaultEffect: types.EffectDeny},
-			wantErr: true,
-		},
-		{
-			name: "invalid effect",
-			policy: &types.Policy{
-				Name:          "bad",
-				DefaultEffect: "maybe",
-			},
-			wantErr: true,
-		},
-		{
-			name: "rule missing actions",
-			policy: &types.Policy{
-				Name:          "bad-rule",
-				DefaultEffect: types.EffectDeny,
-				Rules: []types.Rule{
-					{Name: "empty", Effect: types.EffectAllow},
-				},
-			},
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := Validate(tt.policy)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
+	if p.Rules[0].Effect != types.EffectDeny {
+		t.Errorf("rule effect = %q", p.Rules[0].Effect)
 	}
 }

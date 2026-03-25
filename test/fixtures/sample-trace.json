@@ -1,32 +1,53 @@
 {
-  "trace_id": "sample-trace-001",
   "sandbox_id": "sandbox-001",
-  "spans": [
+  "events": [
     {
       "id": "evt-1",
-      "action": {
-        "type": "file",
-        "path": "/tmp/test.txt",
-        "file_op": "read"
-      },
-      "decision": "allowed",
-      "reason": "allow-tmp-read",
-      "start_time": "2025-01-01T00:00:00Z",
-      "end_time": "2025-01-01T00:00:01Z",
-      "duration_ms": 1000
+      "sandbox_id": "sandbox-001",
+      "type": "sandbox.started",
+      "timestamp": "2025-01-01T00:00:00Z",
+      "data": {
+        "root_dir": "/tmp/sandbox-001",
+        "name": "test-sandbox"
+      }
     },
     {
       "id": "evt-2",
-      "action": {
-        "type": "file",
-        "path": "/etc/passwd",
-        "file_op": "delete"
+      "sandbox_id": "sandbox-001",
+      "type": "action.requested",
+      "timestamp": "2025-01-01T00:00:01Z",
+      "action_id": "action-1",
+      "data": {
+        "type": "file.read"
+      }
+    },
+    {
+      "id": "evt-3",
+      "sandbox_id": "sandbox-001",
+      "type": "policy.evaluated",
+      "timestamp": "2025-01-01T00:00:01Z",
+      "action_id": "action-1",
+      "data": {
+        "allowed": "true",
+        "rule": "allow-file-read"
+      }
+    },
+    {
+      "id": "evt-4",
+      "sandbox_id": "sandbox-001",
+      "type": "action.executed",
+      "timestamp": "2025-01-01T00:00:02Z",
+      "action_id": "action-1",
+      "data": {
+        "success": "true"
       },
-      "decision": "denied",
-      "reason": "deny-root-delete",
-      "start_time": "2025-01-01T00:00:02Z",
-      "end_time": "2025-01-01T00:00:02Z",
-      "duration_ms": 0
+      "duration": 1000000
+    },
+    {
+      "id": "evt-5",
+      "sandbox_id": "sandbox-001",
+      "type": "sandbox.stopped",
+      "timestamp": "2025-01-01T00:00:03Z"
     }
   ]
 }

@@ -1,181 +1,411 @@
 package api
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
+	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
+
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/executor"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/policy"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/trace"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-type createRequest struct {
-	ID       string        `json:"id"`
-	BasePath string        `json:"base_path,omitempty"`
-	Policy   *types.Policy `json:"policy,omitempty"`
+// --- Request/Response types ---
+
+// CreateSandboxRequest is the request body for creating a sandbox.
+type CreateSandboxRequest struct {
+	Name       string `json:"name"`
+	PolicyFile string `json:"policy_file,omitempty"`
+	RootDir    string `json:"root_dir,omitempty"`
 }
 
-type execRequest struct {
-	Action types.Action `json:"action"`
+// ExecActionRequest is the request body for executing an action.
+type ExecActionRequest struct {
+	Type   string            `json:"type"`
+	Params map[string]string `json:"params"`
 }
 
-type errorResponse struct {
-	Error string `json:"error"`
+// ValidatePolicyRequest is the request body for validating a policy.
+type ValidatePolicyRequest struct {
+	Content string `json:"content"`
 }
 
-func writeJSON(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(v)
+// SandboxResponse is the response body for sandbox info.
+type SandboxResponse struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Status    string `json:"status"`
+	RootDir   string `json:"root_dir"`
+	CreatedAt string `json:"created_at,omitempty"`
 }
 
-func writeError(w http.ResponseWriter, status int, msg string) {
-	writeJSON(w, status, errorResponse{Error: msg})
+// --- Health ---
+
+func (s *Server) handleHealth(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+		"time":   time.Now().UTC().Format(time.RFC3339),
+	})
 }
 
-func (s *Server) handleCreateSandbox(w http.ResponseWriter, r *http.Request) {
-	var req createRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, fmt.Sprintf("invalid JSON: %v", err))
+// --- Sandbox CRUD ---
+
+func (s *Server) handleCreateSandbox(c *gin.Context) {
+	var req CreateSandboxRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
 		return
 	}
 
-	if req.ID == "" {
-		writeError(w, http.StatusBadRequest, "id is required")
-		return
+	id := uuid.New().String()
+	name := req.Name
+	if name == "" {
+		name = "sandbox-" + id[:8]
 	}
 
-	if _, exists := s.Manager.Get(req.ID); exists {
-		writeError(w, http.StatusConflict, "sandbox already exists")
-		return
+	rootDir := req.RootDir
+	if rootDir == "" {
+		rootDir = filepath.Join(os.TempDir(), "agent-sandbox", id)
 	}
 
-	cfg := &sandbox.Config{
-		ID:       req.ID,
-		BasePath: req.BasePath,
-		Policy:   req.Policy,
+	cfg := sandbox.DefaultConfig()
+	cfg.ID = id
+	cfg.Name = name
+	cfg.RootDir = rootDir
+	cfg.TracePath = filepath.Join(rootDir, "traces.db")
+
+	engine := policy.NewEngine()
+
+	if req.PolicyFile != "" {
+		p, err := policy.ParseFile(req.PolicyFile)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "load policy: " + err.Error()})
+			return
+		}
+		if err := engine.LoadPolicy(*p); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "apply policy: " + err.Error()})
+			return
+		}
 	}
 
-	sb, err := sandbox.New(cfg)
+	recorder, err := trace.NewRecorder("")
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "create recorder: " + err.Error()})
 		return
 	}
 
-	s.Manager.Add(sb)
-	writeJSON(w, http.StatusCreated, sb)
-}
-
-func (s *Server) handleListSandboxes(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, http.StatusOK, s.Manager.List())
-}
-
-func (s *Server) handleGetSandbox(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	sb, ok := s.Manager.Get(id)
-	if !ok {
-		writeError(w, http.StatusNotFound, "sandbox not found")
-		return
-	}
-	writeJSON(w, http.StatusOK, sb)
-}
-
-func (s *Server) handleStartSandbox(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	sb, ok := s.Manager.Get(id)
-	if !ok {
-		writeError(w, http.StatusNotFound, "sandbox not found")
-		return
-	}
-	if err := sb.Start(); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	writeJSON(w, http.StatusOK, sb)
-}
-
-func (s *Server) handleExecAction(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	sb, ok := s.Manager.Get(id)
-	if !ok {
-		writeError(w, http.StatusNotFound, "sandbox not found")
-		return
-	}
-
-	var req execRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, fmt.Sprintf("invalid JSON: %v", err))
-		return
-	}
-
-	if req.Action.Type == "" {
-		writeError(w, http.StatusBadRequest, "action type is required")
-		return
-	}
-
-	event, err := sb.Execute(&req.Action)
+	instance, err := sandbox.NewSandbox(cfg, engine, recorder)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "create sandbox: " + err.Error()})
 		return
 	}
-	writeJSON(w, http.StatusOK, event)
+
+	exec := executor.NewExecutor(cfg)
+
+	s.mu.Lock()
+	s.sandboxes[id] = &SandboxEntry{
+		Instance: instance,
+		Config:   cfg,
+		Executor: exec,
+		Recorder: recorder,
+		Engine:   engine,
+	}
+	s.mu.Unlock()
+
+	c.JSON(http.StatusCreated, SandboxResponse{
+		ID:      id,
+		Name:    name,
+		Status:  string(instance.Status()),
+		RootDir: rootDir,
+	})
 }
 
-func (s *Server) handleGetTraces(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	sb, ok := s.Manager.Get(id)
+func (s *Server) handleListSandboxes(c *gin.Context) {
+	statusFilter := c.Query("status")
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	result := make([]SandboxResponse, 0, len(s.sandboxes))
+	for id, entry := range s.sandboxes {
+		status := string(entry.Instance.Status())
+		if statusFilter != "" && status != statusFilter {
+			continue
+		}
+		result = append(result, SandboxResponse{
+			ID:      id,
+			Name:    entry.Config.Name,
+			Status:  status,
+			RootDir: entry.Config.RootDir,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"sandboxes": result})
+}
+
+func (s *Server) handleGetSandbox(c *gin.Context) {
+	entry, ok := s.getSandboxEntry(c)
 	if !ok {
-		writeError(w, http.StatusNotFound, "sandbox not found")
 		return
 	}
 
-	traces, err := sb.GetTraces()
+	c.JSON(http.StatusOK, SandboxResponse{
+		ID:      entry.Config.ID,
+		Name:    entry.Config.Name,
+		Status:  string(entry.Instance.Status()),
+		RootDir: entry.Config.RootDir,
+	})
+}
+
+func (s *Server) handleStartSandbox(c *gin.Context) {
+	entry, ok := s.getSandboxEntry(c)
+	if !ok {
+		return
+	}
+
+	if err := entry.Instance.Start(context.Background()); err != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":     entry.Config.ID,
+		"status": string(entry.Instance.Status()),
+	})
+}
+
+func (s *Server) handleExecAction(c *gin.Context) {
+	entry, ok := s.getSandboxEntry(c)
+	if !ok {
+		return
+	}
+
+	var req ExecActionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
+		return
+	}
+
+	action := types.Action{
+		ID:        uuid.New().String(),
+		Type:      types.ActionType(req.Type),
+		Params:    req.Params,
+		Timestamp: time.Now(),
+	}
+
+	result, err := entry.Instance.Execute(context.Background(), action, entry.Executor.Execute)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 		return
 	}
-	writeJSON(w, http.StatusOK, traces)
+
+	// Broadcast trace event to WebSocket clients
+	s.broadcastTraceEvent(entry.Config.ID, types.TraceEvent{
+		ID:        uuid.New().String(),
+		SandboxID: entry.Config.ID,
+		Type:      types.EventActionExecuted,
+		ActionID:  action.ID,
+		Timestamp: time.Now(),
+		Data: map[string]string{
+			"action_type": req.Type,
+			"success":     fmt.Sprintf("%t", result.Success),
+		},
+	})
+
+	c.JSON(http.StatusOK, result)
 }
 
-func (s *Server) handleStopSandbox(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	sb, ok := s.Manager.Get(id)
+func (s *Server) handleStopSandbox(c *gin.Context) {
+	entry, ok := s.getSandboxEntry(c)
 	if !ok {
-		writeError(w, http.StatusNotFound, "sandbox not found")
 		return
 	}
-	if err := sb.Stop(); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+
+	if err := entry.Instance.Stop(context.Background()); err != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
 	}
-	writeJSON(w, http.StatusOK, sb)
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":     entry.Config.ID,
+		"status": string(entry.Instance.Status()),
+	})
 }
 
-func (s *Server) handleDestroySandbox(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	sb, ok := s.Manager.Get(id)
+func (s *Server) handleDestroySandbox(c *gin.Context) {
+	id := c.Param("id")
+
+	s.mu.Lock()
+	entry, ok := s.sandboxes[id]
 	if !ok {
-		writeError(w, http.StatusNotFound, "sandbox not found")
+		s.mu.Unlock()
+		c.JSON(http.StatusNotFound, gin.H{"error": "sandbox not found"})
 		return
 	}
-	if err := sb.Destroy(); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
+
+	if entry.Instance.Status() == sandbox.StatusRunning {
+		entry.Instance.Stop(context.Background())
 	}
-	s.Manager.Delete(id)
-	writeJSON(w, http.StatusOK, map[string]string{"status": "destroyed"})
+	entry.Recorder.Close()
+	delete(s.sandboxes, id)
+	s.mu.Unlock()
+
+	c.JSON(http.StatusOK, gin.H{"id": id, "destroyed": true})
 }
 
-func (s *Server) handleValidatePolicy(w http.ResponseWriter, r *http.Request) {
-	var p types.Policy
-	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
-		writeError(w, http.StatusBadRequest, fmt.Sprintf("invalid JSON: %v", err))
+// --- Traces ---
+
+func (s *Server) handleGetTraces(c *gin.Context) {
+	entry, ok := s.getSandboxEntry(c)
+	if !ok {
 		return
 	}
-	if err := policy.Validate(&p); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+
+	events, err := entry.Instance.GetTraces()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "get traces: " + err.Error()})
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]string{"status": "valid"})
+
+	c.JSON(http.StatusOK, gin.H{"events": events})
+}
+
+// --- Replay ---
+
+func (s *Server) handleStartReplay(c *gin.Context) {
+	entry, ok := s.getSandboxEntry(c)
+	if !ok {
+		return
+	}
+
+	events, err := entry.Instance.GetTraces()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "load traces: " + err.Error()})
+		return
+	}
+
+	id := entry.Config.ID
+	s.replayMu.Lock()
+	s.replays[id] = &ReplaySession{Events: events, Current: 0}
+	s.replayMu.Unlock()
+
+	c.JSON(http.StatusOK, gin.H{
+		"sandbox_id":   id,
+		"total_events": len(events),
+		"status":       "started",
+	})
+}
+
+func (s *Server) handleReplayNext(c *gin.Context) {
+	id := c.Param("id")
+
+	s.replayMu.Lock()
+	session, ok := s.replays[id]
+	if !ok {
+		s.replayMu.Unlock()
+		c.JSON(http.StatusNotFound, gin.H{"error": "no replay session for this sandbox"})
+		return
+	}
+
+	if session.Current >= len(session.Events) {
+		s.replayMu.Unlock()
+		c.JSON(http.StatusOK, gin.H{"done": true, "event": nil})
+		return
+	}
+
+	event := session.Events[session.Current]
+	session.Current++
+	hasMore := session.Current < len(session.Events)
+	s.replayMu.Unlock()
+
+	c.JSON(http.StatusOK, gin.H{
+		"event":    event,
+		"has_more": hasMore,
+		"position": session.Current,
+		"total":    len(session.Events),
+	})
+}
+
+// --- Policy ---
+
+func (s *Server) handleValidatePolicy(c *gin.Context) {
+	var req ValidatePolicyRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
+		return
+	}
+
+	p, err := policy.Parse([]byte(req.Content))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"valid":  false,
+			"errors": []string{err.Error()},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"valid":  true,
+		"policy": p,
+	})
+}
+
+// --- WebSocket ---
+
+func (s *Server) handleWebSocket(c *gin.Context) {
+	id := c.Param("id")
+
+	s.mu.RLock()
+	_, ok := s.sandboxes[id]
+	s.mu.RUnlock()
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sandbox not found"})
+		return
+	}
+
+	conn, err := s.upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		return
+	}
+
+	s.wsMu.Lock()
+	if s.wsClients[id] == nil {
+		s.wsClients[id] = make(map[*websocket.Conn]bool)
+	}
+	s.wsClients[id][conn] = true
+	s.wsMu.Unlock()
+
+	// Keep connection alive until client disconnects
+	for {
+		if _, _, err := conn.ReadMessage(); err != nil {
+			s.wsMu.Lock()
+			delete(s.wsClients[id], conn)
+			s.wsMu.Unlock()
+			conn.Close()
+			return
+		}
+	}
+}
+
+// --- Helpers ---
+
+func (s *Server) getSandboxEntry(c *gin.Context) (*SandboxEntry, bool) {
+	id := c.Param("id")
+	s.mu.RLock()
+	entry, ok := s.sandboxes[id]
+	s.mu.RUnlock()
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sandbox not found"})
+		return nil, false
+	}
+	return entry, true
 }

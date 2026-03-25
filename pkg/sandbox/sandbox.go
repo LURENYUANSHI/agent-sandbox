@@ -1,127 +1,189 @@
 package sandbox
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
-	"github.com/LURENYUANSHI/agent-sandbox/pkg/executor"
-	"github.com/LURENYUANSHI/agent-sandbox/pkg/policy"
-	"github.com/LURENYUANSHI/agent-sandbox/pkg/trace"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-// State represents the lifecycle state of a sandbox.
-type State string
+// Status represents the lifecycle state of a sandbox.
+type Status string
 
 const (
-	StateCreated   State = "created"
-	StateRunning   State = "running"
-	StateStopped   State = "stopped"
-	StateDestroyed State = "destroyed"
+	StatusCreated  Status = "created"
+	StatusRunning  Status = "running"
+	StatusStopped  Status = "stopped"
+	StatusError    Status = "error"
 )
 
-// Sandbox manages an isolated execution environment.
-type Sandbox struct {
-	ID       string `json:"id"`
-	State    State  `json:"state"`
-	BasePath string `json:"base_path"`
-
-	executor *executor.Executor
-	engine   *policy.Engine
-	store    *trace.Store
-	recorder *trace.Recorder
-	replayer *trace.Replayer
+// Instance is a running sandbox that executes actions under policy control.
+type Instance struct {
 	mu       sync.Mutex
+	config   Config
+	status   Status
+	policy   types.PolicyEngine
+	recorder types.TraceRecorder
+	created  time.Time
 }
 
-// New creates a sandbox from the given config.
-func New(cfg *Config) (*Sandbox, error) {
-	if cfg.ID == "" {
-		return nil, fmt.Errorf("sandbox ID is required")
+// NewSandbox creates a new sandbox instance. Call Start() to prepare it for execution.
+func NewSandbox(cfg Config, policyEngine types.PolicyEngine, recorder types.TraceRecorder) (*Instance, error) {
+	if policyEngine == nil {
+		return nil, fmt.Errorf("policy engine is required")
 	}
-
-	p := cfg.Policy
-	if p == nil {
-		p = policy.DefaultPolicy()
+	if recorder == nil {
+		return nil, fmt.Errorf("trace recorder is required")
 	}
-
-	basePath := cfg.BasePath
-	if basePath == "" {
-		basePath = os.TempDir()
-	}
-
-	engine := policy.NewEngine(p)
-	store := trace.NewStore()
-	recorder := trace.NewRecorder(store)
-	replayer := trace.NewReplayer(store)
-	exec := executor.NewExecutor(engine, recorder, basePath)
-
-	return &Sandbox{
-		ID:       cfg.ID,
-		State:    StateCreated,
-		BasePath: basePath,
-		executor: exec,
-		engine:   engine,
-		store:    store,
+	return &Instance{
+		config:   cfg,
+		status:   StatusCreated,
+		policy:   policyEngine,
 		recorder: recorder,
-		replayer: replayer,
+		created:  time.Now(),
 	}, nil
 }
 
-// Start transitions the sandbox to running state.
-func (s *Sandbox) Start() error {
+// Start prepares the sandbox environment (creates root dir, etc.).
+func (s *Instance) Start(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.State != StateCreated && s.State != StateStopped {
-		return fmt.Errorf("cannot start sandbox in state %s", s.State)
+	if s.status == StatusRunning {
+		return fmt.Errorf("sandbox already running")
 	}
-	s.State = StateRunning
+
+	if err := os.MkdirAll(s.config.RootDir, 0o755); err != nil {
+		s.status = StatusError
+		return fmt.Errorf("create sandbox root dir: %w", err)
+	}
+
+	s.status = StatusRunning
+
+	s.recorder.Record(types.TraceEvent{
+		SandboxID: s.config.ID,
+		Type:      types.EventSandboxStarted,
+		Data: map[string]string{
+			"root_dir": s.config.RootDir,
+			"name":     s.config.Name,
+		},
+	})
+
 	return nil
 }
 
-// Execute runs an action inside the sandbox.
-func (s *Sandbox) Execute(action *types.Action) (*types.TraceEvent, error) {
+// Execute runs an action through the policy engine and, if allowed, dispatches it
+// to the provided executeFn. This allows the sandbox to remain decoupled from the
+// executor implementation.
+func (s *Instance) Execute(ctx context.Context, action types.Action, executeFn func(ctx context.Context, action types.Action) (*types.ActionResult, error)) (*types.ActionResult, error) {
 	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if s.State != StateRunning {
-		return nil, fmt.Errorf("sandbox is not running (state: %s)", s.State)
+	if s.status != StatusRunning {
+		s.mu.Unlock()
+		return nil, fmt.Errorf("sandbox is not running (status: %s)", s.status)
 	}
-	return s.executor.Execute(s.ID, action)
+	s.mu.Unlock()
+
+	// 1. Record action requested
+	s.recorder.Record(types.TraceEvent{
+		SandboxID: s.config.ID,
+		Type:      types.EventActionRequested,
+		ActionID:  action.ID,
+		Data:      map[string]string{"type": string(action.Type)},
+	})
+
+	// 2. Evaluate policy
+	decision := s.policy.Evaluate(action)
+
+	// 3. Record policy decision
+	s.recorder.Record(types.TraceEvent{
+		SandboxID: s.config.ID,
+		Type:      types.EventPolicyEvaluated,
+		ActionID:  action.ID,
+		Data: map[string]string{
+			"allowed": fmt.Sprintf("%t", decision.Allowed),
+			"rule":    decision.Rule,
+			"reason":  decision.Reason,
+		},
+	})
+
+	// 4. If denied, record and return error
+	if !decision.Allowed {
+		s.recorder.Record(types.TraceEvent{
+			SandboxID: s.config.ID,
+			Type:      types.EventActionDenied,
+			ActionID:  action.ID,
+			Data:      map[string]string{"reason": decision.Reason},
+		})
+		return nil, fmt.Errorf("action denied by policy: %s", decision.Reason)
+	}
+
+	// 5. Execute with timeout
+	timeout := time.Duration(s.config.TimeoutSeconds) * time.Second
+	execCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	start := time.Now()
+	result, err := executeFn(execCtx, action)
+	elapsed := time.Since(start)
+
+	// 6. Record outcome
+	if err != nil {
+		s.recorder.Record(types.TraceEvent{
+			SandboxID: s.config.ID,
+			Type:      types.EventActionFailed,
+			ActionID:  action.ID,
+			Duration:  elapsed,
+			Data:      map[string]string{"error": err.Error()},
+		})
+		return nil, fmt.Errorf("execute action: %w", err)
+	}
+
+	s.recorder.Record(types.TraceEvent{
+		SandboxID: s.config.ID,
+		Type:      types.EventActionExecuted,
+		ActionID:  action.ID,
+		Duration:  elapsed,
+		Data:      map[string]string{"success": fmt.Sprintf("%t", result.Success)},
+	})
+
+	return result, nil
 }
 
-// Stop transitions the sandbox to stopped state.
-func (s *Sandbox) Stop() error {
+// Stop shuts down the sandbox and records the event.
+func (s *Instance) Stop(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.State != StateRunning {
-		return fmt.Errorf("cannot stop sandbox in state %s", s.State)
+	if s.status != StatusRunning {
+		return fmt.Errorf("sandbox is not running (status: %s)", s.status)
 	}
-	s.State = StateStopped
+
+	s.status = StatusStopped
+
+	s.recorder.Record(types.TraceEvent{
+		SandboxID: s.config.ID,
+		Type:      types.EventSandboxStopped,
+	})
+
 	return nil
 }
 
-// Destroy permanently destroys the sandbox.
-func (s *Sandbox) Destroy() error {
+// Status returns the current sandbox status.
+func (s *Instance) Status() Status {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	return s.status
+}
 
-	if s.State == StateDestroyed {
-		return fmt.Errorf("sandbox already destroyed")
-	}
-	s.State = StateDestroyed
-	return nil
+// Config returns the sandbox configuration.
+func (s *Instance) Config() Config {
+	return s.config
 }
 
 // GetTraces returns all trace events for this sandbox.
-func (s *Sandbox) GetTraces() ([]*types.TraceEvent, error) {
-	return s.recorder.GetEvents(s.ID)
-}
-
-// ReplayTraces returns trace events in chronological order.
-func (s *Sandbox) ReplayTraces() ([]*types.TraceEvent, error) {
-	return s.replayer.Replay(s.ID)
+func (s *Instance) GetTraces() ([]types.TraceEvent, error) {
+	return s.recorder.GetEvents(s.config.ID)
 }

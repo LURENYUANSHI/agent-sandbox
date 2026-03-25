@@ -1,100 +1,180 @@
 package api
 
 import (
+	"context"
+	"fmt"
+	"log"
 	"net/http"
 	"sync"
+	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/executor"
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/policy"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/trace"
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-// Manager tracks active sandboxes.
-type Manager struct {
-	sandboxes map[string]*sandbox.Sandbox
-	mu        sync.RWMutex
+// ServerConfig holds configuration for the API server.
+type ServerConfig struct {
+	Port    int
+	DevMode bool
 }
 
-// NewManager creates a sandbox manager.
-func NewManager() *Manager {
-	return &Manager{sandboxes: make(map[string]*sandbox.Sandbox)}
+// SandboxEntry tracks a running sandbox and its associated resources.
+type SandboxEntry struct {
+	Instance *sandbox.Instance
+	Config   sandbox.Config
+	Executor *executor.Executor
+	Recorder *trace.Recorder
+	Engine   *policy.Engine
 }
 
-// Get returns a sandbox by ID.
-func (m *Manager) Get(id string) (*sandbox.Sandbox, bool) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	sb, ok := m.sandboxes[id]
-	return sb, ok
+// ReplaySession tracks an active replay session.
+type ReplaySession struct {
+	Events  []types.TraceEvent
+	Current int
 }
 
-// Add registers a sandbox.
-func (m *Manager) Add(sb *sandbox.Sandbox) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.sandboxes[sb.ID] = sb
-}
-
-// Delete removes a sandbox.
-func (m *Manager) Delete(id string) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	delete(m.sandboxes, id)
-}
-
-// List returns all sandboxes.
-func (m *Manager) List() []*sandbox.Sandbox {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	result := make([]*sandbox.Sandbox, 0, len(m.sandboxes))
-	for _, sb := range m.sandboxes {
-		result = append(result, sb)
-	}
-	return result
-}
-
-// Server is the HTTP API server.
+// Server is the API server that manages sandboxes.
 type Server struct {
-	Manager *Manager
-	Mux     *http.ServeMux
+	config     ServerConfig
+	router     *gin.Engine
+	httpServer *http.Server
+
+	mu        sync.RWMutex
+	sandboxes map[string]*SandboxEntry
+
+	replayMu sync.Mutex
+	replays  map[string]*ReplaySession
+
+	upgrader websocket.Upgrader
+
+	wsMu        sync.Mutex
+	wsClients   map[string]map[*websocket.Conn]bool
 }
 
-// NewServer creates an API server with all routes registered.
-func NewServer() *Server {
-	s := &Server{
-		Manager: NewManager(),
-		Mux:     http.NewServeMux(),
+// NewServer creates a new API server.
+func NewServer(config ServerConfig) *Server {
+	if !config.DevMode {
+		gin.SetMode(gin.ReleaseMode)
 	}
-	s.registerRoutes()
+
+	s := &Server{
+		config:    config,
+		sandboxes: make(map[string]*SandboxEntry),
+		replays:   make(map[string]*ReplaySession),
+		wsClients: make(map[string]map[*websocket.Conn]bool),
+		upgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+	}
+
+	s.router = gin.New()
+	s.setupRoutes()
+
 	return s
 }
 
-// NewServerWithManager creates an API server with an existing manager.
-func NewServerWithManager(m *Manager) *Server {
-	s := &Server{
-		Manager: m,
-		Mux:     http.NewServeMux(),
+func (s *Server) setupRoutes() {
+	s.router.Use(Recovery())
+	s.router.Use(RequestID())
+	s.router.Use(Logger())
+	s.router.Use(CORS())
+
+	v1 := s.router.Group("/api/v1")
+	{
+		v1.GET("/health", s.handleHealth)
+
+		v1.POST("/sandboxes", s.handleCreateSandbox)
+		v1.GET("/sandboxes", s.handleListSandboxes)
+		v1.GET("/sandboxes/:id", s.handleGetSandbox)
+		v1.POST("/sandboxes/:id/start", s.handleStartSandbox)
+		v1.POST("/sandboxes/:id/exec", s.handleExecAction)
+		v1.POST("/sandboxes/:id/stop", s.handleStopSandbox)
+		v1.DELETE("/sandboxes/:id", s.handleDestroySandbox)
+		v1.GET("/sandboxes/:id/traces", s.handleGetTraces)
+		v1.POST("/sandboxes/:id/replay", s.handleStartReplay)
+		v1.GET("/sandboxes/:id/replay/next", s.handleReplayNext)
+		v1.POST("/policies/validate", s.handleValidatePolicy)
+		v1.GET("/sandboxes/:id/ws", s.handleWebSocket)
 	}
-	s.registerRoutes()
-	return s
 }
 
-func (s *Server) registerRoutes() {
-	s.Mux.HandleFunc("POST /api/sandboxes", withLogging(s.handleCreateSandbox))
-	s.Mux.HandleFunc("GET /api/sandboxes", withLogging(s.handleListSandboxes))
-	s.Mux.HandleFunc("GET /api/sandboxes/{id}", withLogging(s.handleGetSandbox))
-	s.Mux.HandleFunc("POST /api/sandboxes/{id}/start", withLogging(s.handleStartSandbox))
-	s.Mux.HandleFunc("POST /api/sandboxes/{id}/exec", withLogging(s.handleExecAction))
-	s.Mux.HandleFunc("GET /api/sandboxes/{id}/traces", withLogging(s.handleGetTraces))
-	s.Mux.HandleFunc("POST /api/sandboxes/{id}/stop", withLogging(s.handleStopSandbox))
-	s.Mux.HandleFunc("DELETE /api/sandboxes/{id}", withLogging(s.handleDestroySandbox))
-	s.Mux.HandleFunc("POST /api/policies/validate", withLogging(s.handleValidatePolicy))
+// Start begins serving HTTP requests.
+func (s *Server) Start() error {
+	addr := fmt.Sprintf(":%d", s.config.Port)
+	s.httpServer = &http.Server{
+		Addr:    addr,
+		Handler: s.router,
+	}
+
+	log.Printf("API server starting on %s", addr)
+	if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		return fmt.Errorf("server listen: %w", err)
+	}
+	return nil
 }
 
-// Handler returns the HTTP handler for the server.
-func (s *Server) Handler() http.Handler {
-	return withCORS(s.Mux)
+// Shutdown gracefully stops the server.
+func (s *Server) Shutdown(ctx context.Context) error {
+	log.Println("Shutting down API server...")
+
+	// Close all WebSocket connections
+	s.wsMu.Lock()
+	for _, clients := range s.wsClients {
+		for conn := range clients {
+			conn.Close()
+		}
+	}
+	s.wsMu.Unlock()
+
+	// Stop all running sandboxes
+	s.mu.Lock()
+	for _, entry := range s.sandboxes {
+		if entry.Instance.Status() == sandbox.StatusRunning {
+			entry.Instance.Stop(ctx)
+		}
+		entry.Recorder.Close()
+	}
+	s.mu.Unlock()
+
+	shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	return s.httpServer.Shutdown(shutdownCtx)
 }
 
-// ListenAndServe starts the HTTP server.
-func (s *Server) ListenAndServe(addr string) error {
-	return http.ListenAndServe(addr, s.Handler())
+// Router returns the gin engine for testing.
+func (s *Server) Router() *gin.Engine {
+	return s.router
+}
+
+// broadcastTraceEvent sends a trace event to all WebSocket clients for a sandbox.
+func (s *Server) broadcastTraceEvent(sandboxID string, event types.TraceEvent) {
+	s.wsMu.Lock()
+	clients, ok := s.wsClients[sandboxID]
+	if !ok {
+		s.wsMu.Unlock()
+		return
+	}
+	// Copy the client set to avoid holding the lock during writes
+	conns := make([]*websocket.Conn, 0, len(clients))
+	for conn := range clients {
+		conns = append(conns, conn)
+	}
+	s.wsMu.Unlock()
+
+	for _, conn := range conns {
+		if err := conn.WriteJSON(event); err != nil {
+			s.wsMu.Lock()
+			delete(clients, conn)
+			s.wsMu.Unlock()
+			conn.Close()
+		}
+	}
 }

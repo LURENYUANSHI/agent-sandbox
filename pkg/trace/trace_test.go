@@ -1,116 +1,122 @@
 package trace
 
 import (
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-func makeEvent(id, sandboxID string, decision types.Decision) *types.TraceEvent {
-	now := time.Now()
-	return &types.TraceEvent{
-		ID:        id,
-		TraceID:   "trace-1",
-		SandboxID: sandboxID,
-		Action: types.Action{
-			ID:     "action-" + id,
-			Type:   types.ActionTypeFile,
-			Path:   "/tmp/test.txt",
-			FileOp: types.FileOpRead,
-		},
-		Decision:  decision,
-		StartTime: now,
-		EndTime:   now.Add(10 * time.Millisecond),
+func TestRecorder_InMemory(t *testing.T) {
+	rec, err := NewRecorder("")
+	if err != nil {
+		t.Fatalf("NewRecorder: %v", err)
+	}
+	defer rec.Close()
+
+	err = rec.Record(types.TraceEvent{
+		SandboxID: "sb1",
+		Type:      types.EventSandboxStarted,
+	})
+	if err != nil {
+		t.Fatalf("Record: %v", err)
+	}
+
+	err = rec.Record(types.TraceEvent{
+		SandboxID: "sb1",
+		Type:      types.EventActionRequested,
+		ActionID:  "a1",
+	})
+	if err != nil {
+		t.Fatalf("Record: %v", err)
+	}
+
+	// Different sandbox
+	err = rec.Record(types.TraceEvent{
+		SandboxID: "sb2",
+		Type:      types.EventSandboxStarted,
+	})
+	if err != nil {
+		t.Fatalf("Record: %v", err)
+	}
+
+	events, err := rec.GetEvents("sb1")
+	if err != nil {
+		t.Fatalf("GetEvents: %v", err)
+	}
+	if len(events) != 2 {
+		t.Errorf("expected 2 events for sb1, got %d", len(events))
+	}
+
+	events, err = rec.GetEvents("sb2")
+	if err != nil {
+		t.Fatalf("GetEvents: %v", err)
+	}
+	if len(events) != 1 {
+		t.Errorf("expected 1 event for sb2, got %d", len(events))
 	}
 }
 
-func TestStoreAndRetrieve(t *testing.T) {
-	store := NewStore()
-	event := makeEvent("e1", "sb-1", types.DecisionAllowed)
+func TestRecorder_WithStore(t *testing.T) {
+	dir := t.TempDir()
+	dbPath := filepath.Join(dir, "trace.db")
 
-	if err := store.Save(event); err != nil {
-		t.Fatalf("save: %v", err)
+	rec, err := NewRecorder(dbPath)
+	if err != nil {
+		t.Fatalf("NewRecorder: %v", err)
 	}
 
-	events, err := store.GetBySandbox("sb-1")
+	err = rec.Record(types.TraceEvent{
+		ID:        "e1",
+		SandboxID: "sb-store",
+		Type:      types.EventActionExecuted,
+		ActionID:  "a1",
+		Timestamp: time.Now(),
+		Data:      map[string]string{"result": "ok"},
+		Duration:  100 * time.Millisecond,
+	})
 	if err != nil {
-		t.Fatalf("get: %v", err)
+		t.Fatalf("Record: %v", err)
+	}
+	rec.Close()
+
+	// Verify data persisted by opening a new store
+	store, err := NewStore(dbPath)
+	if err != nil {
+		t.Fatalf("NewStore: %v", err)
+	}
+	defer store.Close()
+
+	events, err := store.Load("sb-store")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
 	}
 	if len(events) != 1 {
 		t.Fatalf("expected 1 event, got %d", len(events))
 	}
-	if events[0].ID != "e1" {
-		t.Errorf("event ID = %s, want e1", events[0].ID)
+	if events[0].ActionID != "a1" {
+		t.Errorf("action_id = %q", events[0].ActionID)
+	}
+	if events[0].Data["result"] != "ok" {
+		t.Errorf("data = %v", events[0].Data)
 	}
 }
 
-func TestRecorder(t *testing.T) {
-	store := NewStore()
-	recorder := NewRecorder(store)
+func TestRecorder_AutoFillsIDAndTimestamp(t *testing.T) {
+	rec, _ := NewRecorder("")
+	defer rec.Close()
 
-	event := makeEvent("e1", "sb-1", types.DecisionAllowed)
-	event.DurationMs = 0
+	rec.Record(types.TraceEvent{SandboxID: "sb"})
 
-	if err := recorder.Record(event); err != nil {
-		t.Fatalf("record: %v", err)
-	}
-
-	if event.DurationMs == 0 {
-		t.Error("recorder should set DurationMs")
-	}
-
-	events, err := recorder.GetEvents("sb-1")
-	if err != nil {
-		t.Fatalf("get events: %v", err)
-	}
+	events, _ := rec.GetEvents("sb")
 	if len(events) != 1 {
-		t.Errorf("expected 1 event, got %d", len(events))
+		t.Fatal("expected 1 event")
 	}
-}
-
-func TestReplayer(t *testing.T) {
-	store := NewStore()
-	now := time.Now()
-
-	// Insert events out of order
-	e2 := makeEvent("e2", "sb-1", types.DecisionAllowed)
-	e2.StartTime = now.Add(100 * time.Millisecond)
-	e1 := makeEvent("e1", "sb-1", types.DecisionDenied)
-	e1.StartTime = now
-
-	store.Save(e2)
-	store.Save(e1)
-
-	replayer := NewReplayer(store)
-	events, err := replayer.Replay("sb-1")
-	if err != nil {
-		t.Fatalf("replay: %v", err)
+	if events[0].ID == "" {
+		t.Error("expected auto-generated ID")
 	}
-	if len(events) != 2 {
-		t.Fatalf("expected 2 events, got %d", len(events))
-	}
-	if events[0].ID != "e1" {
-		t.Errorf("first event should be e1 (earlier), got %s", events[0].ID)
-	}
-}
-
-func TestOTelExport(t *testing.T) {
-	event := makeEvent("e1", "sb-1", types.DecisionAllowed)
-	spans := ExportToOTel([]*types.TraceEvent{event})
-
-	if len(spans) != 1 {
-		t.Fatalf("expected 1 span, got %d", len(spans))
-	}
-	if spans[0].TraceID != "trace-1" {
-		t.Errorf("traceID = %s, want trace-1", spans[0].TraceID)
-	}
-
-	data, err := ExportToJSON([]*types.TraceEvent{event})
-	if err != nil {
-		t.Fatalf("export JSON: %v", err)
-	}
-	if len(data) == 0 {
-		t.Error("exported JSON should not be empty")
+	if events[0].Timestamp.IsZero() {
+		t.Error("expected auto-filled timestamp")
 	}
 }

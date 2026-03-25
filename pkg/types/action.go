@@ -2,36 +2,36 @@ package types
 
 import "time"
 
-// ActionType represents the category of an action.
+// ActionType represents the category of action being performed.
 type ActionType string
 
 const (
-	ActionTypeFile    ActionType = "file"
-	ActionTypeNetwork ActionType = "network"
-	ActionTypeProcess ActionType = "process"
-	ActionTypeShell   ActionType = "shell"
+	ActionTypeFileRead    ActionType = "file.read"
+	ActionTypeFileWrite   ActionType = "file.write"
+	ActionTypeFileDelete  ActionType = "file.delete"
+	ActionTypeNetHTTP     ActionType = "net.http"
+	ActionTypeNetConnect  ActionType = "net.connect"
+	ActionTypeProcess     ActionType = "process.exec"
+	ActionTypeShell       ActionType = "shell.exec"
 )
 
-// FileOp represents a filesystem operation.
-type FileOp string
-
-const (
-	FileOpRead   FileOp = "read"
-	FileOpWrite  FileOp = "write"
-	FileOpDelete FileOp = "delete"
-	FileOpList   FileOp = "list"
-)
-
-// Action represents an operation that an agent wants to perform.
+// Action represents a request to perform an operation within the sandbox.
 type Action struct {
-	ID        string     `json:"id"`
-	Type      ActionType `json:"type"`
-	Path      string     `json:"path,omitempty"`
-	FileOp    FileOp     `json:"file_op,omitempty"`
-	Content   string     `json:"content,omitempty"`
-	Host      string     `json:"host,omitempty"`
-	Port      int        `json:"port,omitempty"`
-	Command   string     `json:"command,omitempty"`
-	Args      []string   `json:"args,omitempty"`
-	Timestamp time.Time  `json:"timestamp"`
+	ID        string            `json:"id"`
+	Type      ActionType        `json:"type"`
+	Params    map[string]string `json:"params"`
+	Timestamp time.Time         `json:"timestamp"`
+	Metadata  map[string]string `json:"metadata,omitempty"`
+}
+
+// ActionResult holds the outcome of an executed action.
+type ActionResult struct {
+	ActionID   string        `json:"action_id"`
+	Success    bool          `json:"success"`
+	Output     string        `json:"output,omitempty"`
+	Error      string        `json:"error,omitempty"`
+	ExitCode   int           `json:"exit_code,omitempty"`
+	Duration   time.Duration `json:"duration"`
+	BytesRead  int64         `json:"bytes_read,omitempty"`
+	BytesWrite int64         `json:"bytes_written,omitempty"`
 }
