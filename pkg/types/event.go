@@ -14,8 +14,9 @@ const (
 	EventPolicyEvaluated EventType = "policy.evaluated"
 	EventActionAllowed   EventType = "action.allowed"
 	EventActionDenied    EventType = "action.denied"
-	EventActionExecuted  EventType = "action.executed"
-	EventActionFailed    EventType = "action.failed"
+	EventActionExecuted    EventType = "action.executed"
+	EventActionFailed      EventType = "action.failed"
+	EventResourceExceeded  EventType = "resource.exceeded"
 )
 
 // Trace-system event types for span-based recording.
