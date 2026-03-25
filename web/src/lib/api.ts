@@ -116,6 +116,17 @@ export interface DashboardStats {
   avg_response_ms: number;
 }
 
+export interface ActivityEvent {
+  id: string;
+  sandbox_id: string;
+  event_type: string;
+  action_type?: string;
+  action_detail: string;
+  effect: string;
+  duration_ms: number;
+  timestamp: string;
+}
+
 export interface WebSocketEvent {
   type: string;
   sandbox_id: string;
@@ -222,8 +233,8 @@ export function getDashboardStats(): Promise<DashboardStats> {
   return request<DashboardStats>("/dashboard/stats");
 }
 
-export function getRecentActivity(): Promise<TraceEvent[]> {
-  return request<TraceEvent[]>("/dashboard/activity");
+export function getRecentActivity(): Promise<ActivityEvent[]> {
+  return request<ActivityEvent[]>("/dashboard/activity");
 }
 
 // ─── WebSocket ──────────────────────────────────────────────────────────────

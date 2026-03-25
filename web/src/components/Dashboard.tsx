@@ -9,7 +9,7 @@ import {
   List,
 } from "lucide-react";
 import { getDashboardStats, getRecentActivity } from "../lib/api";
-import type { DashboardStats, TraceEvent } from "../lib/api";
+import type { DashboardStats, ActivityEvent } from "../lib/api";
 
 function StatCard({
   icon: Icon,
@@ -143,7 +143,7 @@ export default function Dashboard() {
               No recent activity
             </p>
           )}
-          {activity.data?.slice(0, 20).map((ev: TraceEvent) => (
+          {activity.data?.slice(0, 20).map((ev: ActivityEvent) => (
             <div
               key={ev.id}
               className="flex items-center gap-3 px-5 py-3 text-sm"
