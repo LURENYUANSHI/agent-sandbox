@@ -105,6 +105,11 @@ func (s *Server) handleCreateSandbox(c *gin.Context) {
 		return
 	}
 
+	if verrs := ValidateCreateSandbox(req); verrs != nil {
+		respondValidationError(c, verrs)
+		return
+	}
+
 	id := uuid.New().String()
 	name := req.Name
 	if name == "" {
@@ -236,6 +241,11 @@ func (s *Server) handleExecAction(c *gin.Context) {
 	var req ExecActionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
+		return
+	}
+
+	if verrs := ValidateExecAction(req); verrs != nil {
+		respondValidationError(c, verrs)
 		return
 	}
 
@@ -393,6 +403,14 @@ func (s *Server) handleValidatePolicy(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"valid":  false,
 			"errors": []string{err.Error()},
+		})
+		return
+	}
+
+	if verrs := ValidatePolicy(*p); verrs != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"valid":  false,
+			"errors": verrs.Errors,
 		})
 		return
 	}
