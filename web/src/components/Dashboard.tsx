@@ -7,9 +7,10 @@ import {
   Clock,
   Plus,
   List,
+  Radio,
 } from "lucide-react";
 import { getDashboardStats, getRecentActivity } from "../lib/api";
-import type { DashboardStats, TraceEvent } from "../lib/api";
+import type { DashboardStats, ActivityEvent } from "../lib/api";
 
 function StatCard({
   icon: Icon,
@@ -126,8 +127,14 @@ export default function Dashboard() {
 
       {/* Recent Activity */}
       <div className="bg-gray-800 rounded-xl border border-gray-700">
-        <div className="px-5 py-4 border-b border-gray-700">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-700">
           <h2 className="text-lg font-semibold">Recent Activity</h2>
+          {!activity.isError && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
+              <Radio className="w-3 h-3 text-green-400 animate-pulse" />
+              Live
+            </span>
+          )}
         </div>
         <div className="divide-y divide-gray-700">
           {activity.isLoading && (
@@ -143,7 +150,7 @@ export default function Dashboard() {
               No recent activity
             </p>
           )}
-          {activity.data?.slice(0, 20).map((ev: TraceEvent) => (
+          {activity.data?.slice(0, 20).map((ev: ActivityEvent) => (
             <div
               key={ev.id}
               className="flex items-center gap-3 px-5 py-3 text-sm"

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/config"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
@@ -18,12 +19,12 @@ type Executor struct {
 }
 
 // NewExecutor creates an executor bound to a sandbox configuration.
-func NewExecutor(config sandbox.Config) *Executor {
+func NewExecutor(sbxCfg sandbox.Config, execCfg config.ExecutorConfig) *Executor {
 	return &Executor{
-		config: config,
-		fs:     NewFilesystemExecutor(config.RootDir),
-		net:    NewNetworkExecutor(config.NetworkEnabled),
-		proc:   NewProcessExecutor(config.RootDir, time.Duration(config.TimeoutSeconds)*time.Second),
+		config: sbxCfg,
+		fs:     NewFilesystemExecutor(sbxCfg.RootDir, execCfg),
+		net:    NewNetworkExecutor(sbxCfg.NetworkEnabled, execCfg),
+		proc:   NewProcessExecutor(sbxCfg.RootDir, time.Duration(sbxCfg.TimeoutSeconds)*time.Second),
 	}
 }
 

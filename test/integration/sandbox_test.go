@@ -8,6 +8,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/config"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/executor"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/policy"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
@@ -45,7 +46,7 @@ func newTestSandbox(t *testing.T, id string, pol *types.Policy) (*sandbox.Instan
 		t.Fatalf("create sandbox: %v", err)
 	}
 
-	exec := executor.NewExecutor(cfg)
+	exec := executor.NewExecutor(cfg, config.Default().Executor)
 	return instance, exec, tmpDir
 }
 
@@ -264,7 +265,7 @@ func TestSandboxPolicyHotReload(t *testing.T) {
 	cfg.TraceEnabled = false
 
 	instance, _ := sandbox.NewSandbox(cfg, engine, recorder)
-	exec := executor.NewExecutor(cfg)
+	exec := executor.NewExecutor(cfg, config.Default().Executor)
 	instance.Start(context.Background())
 	defer instance.Stop(context.Background())
 

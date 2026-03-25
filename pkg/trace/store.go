@@ -83,7 +83,9 @@ func (s *Store) Load(sandboxID string) ([]types.TraceEvent, error) {
 		}
 		e.Duration = time.Duration(dur)
 		if dataJSON != "" {
-			json.Unmarshal([]byte(dataJSON), &e.Data)
+			if err := json.Unmarshal([]byte(dataJSON), &e.Data); err != nil {
+				return nil, fmt.Errorf("unmarshal trace event data: %w", err)
+			}
 		}
 		events = append(events, e)
 	}

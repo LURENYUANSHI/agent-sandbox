@@ -95,7 +95,7 @@ export default function SandboxDetail() {
         {traces.isError && (
           <p className="text-gray-500">Unable to load traces.</p>
         )}
-        {traces.data && <TraceViewer events={traces.data} />}
+        {traces.data && <TraceViewer events={traces.data} sandboxId={id} />}
       </div>
     </div>
   );

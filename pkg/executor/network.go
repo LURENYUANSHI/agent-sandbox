@@ -8,24 +8,27 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/config"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
-const maxResponseSize = 5 * 1024 * 1024 // 5 MB
-
 // NetworkExecutor handles network operations.
 type NetworkExecutor struct {
-	enabled bool
-	client  *http.Client
+	enabled         bool
+	client          *http.Client
+	maxResponseSize int64
+	tcpTimeout      time.Duration
 }
 
 // NewNetworkExecutor creates a network executor.
-func NewNetworkExecutor(enabled bool) *NetworkExecutor {
+func NewNetworkExecutor(enabled bool, cfg config.ExecutorConfig) *NetworkExecutor {
 	return &NetworkExecutor{
 		enabled: enabled,
 		client: &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout: time.Duration(cfg.HTTPTimeoutSec) * time.Second,
 		},
+		maxResponseSize: int64(cfg.MaxResponseSizeMB) * 1024 * 1024,
+		tcpTimeout:      time.Duration(cfg.TCPTimeoutSec) * time.Second,
 	}
 }
 
@@ -55,7 +58,7 @@ func (n *NetworkExecutor) ExecuteNetHTTP(ctx context.Context, action types.Actio
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseSize))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, n.maxResponseSize))
 	if err != nil {
 		return nil, fmt.Errorf("read response body: %w", err)
 	}
@@ -82,7 +85,7 @@ func (n *NetworkExecutor) ExecuteNetConnect(ctx context.Context, action types.Ac
 	}
 
 	addr := net.JoinHostPort(host, port)
-	dialer := net.Dialer{Timeout: 10 * time.Second}
+	dialer := net.Dialer{Timeout: n.tcpTimeout}
 	conn, err := dialer.DialContext(ctx, "tcp", addr)
 	if err != nil {
 		return &types.ActionResult{

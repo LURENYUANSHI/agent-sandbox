@@ -11,9 +11,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/config"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
+
+func testExecConfig() config.ExecutorConfig {
+	return config.Default().Executor
+}
 
 func testConfig(t *testing.T) sandbox.Config {
 	t.Helper()
@@ -33,7 +38,7 @@ func testConfig(t *testing.T) sandbox.Config {
 
 func TestFilesystem_ReadWriteDelete(t *testing.T) {
 	cfg := testConfig(t)
-	fs := NewFilesystemExecutor(cfg.RootDir)
+	fs := NewFilesystemExecutor(cfg.RootDir, testExecConfig())
 	ctx := context.Background()
 
 	// Write a file
@@ -94,7 +99,7 @@ func TestFilesystem_ReadWriteDelete(t *testing.T) {
 
 func TestFilesystem_PathEscape(t *testing.T) {
 	cfg := testConfig(t)
-	fs := NewFilesystemExecutor(cfg.RootDir)
+	fs := NewFilesystemExecutor(cfg.RootDir, testExecConfig())
 	ctx := context.Background()
 
 	// Attempt directory traversal
@@ -113,7 +118,7 @@ func TestFilesystem_PathEscape(t *testing.T) {
 
 func TestFilesystem_NestedDirectories(t *testing.T) {
 	cfg := testConfig(t)
-	fs := NewFilesystemExecutor(cfg.RootDir)
+	fs := NewFilesystemExecutor(cfg.RootDir, testExecConfig())
 	ctx := context.Background()
 
 	writeAction := types.Action{
@@ -141,7 +146,7 @@ func TestFilesystem_NestedDirectories(t *testing.T) {
 
 func TestFilesystem_DeleteSandboxRoot(t *testing.T) {
 	cfg := testConfig(t)
-	fs := NewFilesystemExecutor(cfg.RootDir)
+	fs := NewFilesystemExecutor(cfg.RootDir, testExecConfig())
 	ctx := context.Background()
 
 	delAction := types.Action{
@@ -159,7 +164,7 @@ func TestFilesystem_DeleteSandboxRoot(t *testing.T) {
 
 func TestFilesystem_MissingParams(t *testing.T) {
 	cfg := testConfig(t)
-	fs := NewFilesystemExecutor(cfg.RootDir)
+	fs := NewFilesystemExecutor(cfg.RootDir, testExecConfig())
 	ctx := context.Background()
 
 	_, err := fs.ExecuteFileRead(ctx, types.Action{ID: "x", Params: map[string]string{}})
@@ -282,7 +287,7 @@ func TestProcess_Shell(t *testing.T) {
 // --- Network tests ---
 
 func TestNetwork_DisabledRejects(t *testing.T) {
-	net := NewNetworkExecutor(false)
+	net := NewNetworkExecutor(false, testExecConfig())
 	ctx := context.Background()
 
 	action := types.Action{
@@ -312,7 +317,7 @@ func TestNetwork_DisabledRejects(t *testing.T) {
 }
 
 func TestNetwork_MissingParams(t *testing.T) {
-	net := NewNetworkExecutor(true)
+	net := NewNetworkExecutor(true, testExecConfig())
 	ctx := context.Background()
 
 	_, err := net.ExecuteNetHTTP(ctx, types.Action{ID: "x", Params: map[string]string{}})
@@ -330,7 +335,7 @@ func TestNetwork_MissingParams(t *testing.T) {
 
 func TestExecutor_Dispatch(t *testing.T) {
 	cfg := testConfig(t)
-	exec := NewExecutor(cfg)
+	exec := NewExecutor(cfg, testExecConfig())
 	ctx := context.Background()
 
 	// Write a file through the executor
@@ -369,7 +374,7 @@ func TestExecutor_Dispatch(t *testing.T) {
 
 func TestExecutor_UnsupportedType(t *testing.T) {
 	cfg := testConfig(t)
-	exec := NewExecutor(cfg)
+	exec := NewExecutor(cfg, testExecConfig())
 
 	action := types.Action{
 		ID:   "bad",
@@ -383,7 +388,7 @@ func TestExecutor_UnsupportedType(t *testing.T) {
 
 func TestExecutor_DispatchDelete(t *testing.T) {
 	cfg := testConfig(t)
-	exec := NewExecutor(cfg)
+	exec := NewExecutor(cfg, testExecConfig())
 	ctx := context.Background()
 
 	// Write then delete through executor dispatch
@@ -416,7 +421,7 @@ func TestExecutor_DispatchDelete(t *testing.T) {
 
 func TestExecutor_DispatchProcess(t *testing.T) {
 	cfg := testConfig(t)
-	exec := NewExecutor(cfg)
+	exec := NewExecutor(cfg, testExecConfig())
 	ctx := context.Background()
 
 	var action types.Action
@@ -454,7 +459,7 @@ func TestExecutor_DispatchProcess(t *testing.T) {
 
 func TestExecutor_DispatchShell(t *testing.T) {
 	cfg := testConfig(t)
-	exec := NewExecutor(cfg)
+	exec := NewExecutor(cfg, testExecConfig())
 	ctx := context.Background()
 
 	action := types.Action{
@@ -475,7 +480,7 @@ func TestExecutor_DispatchShell(t *testing.T) {
 
 func TestNetwork_HTTPEnabled(t *testing.T) {
 	// Start a local test HTTP server
-	net := NewNetworkExecutor(true)
+	net := NewNetworkExecutor(true, testExecConfig())
 	ctx := context.Background()
 
 	mux := http.NewServeMux()
@@ -514,7 +519,7 @@ func TestNetwork_HTTPEnabled(t *testing.T) {
 }
 
 func TestNetwork_HTTPWithMethod(t *testing.T) {
-	net := NewNetworkExecutor(true)
+	net := NewNetworkExecutor(true, testExecConfig())
 	ctx := context.Background()
 
 	mux := http.NewServeMux()
@@ -561,7 +566,7 @@ func TestNetwork_ConnectEnabled(t *testing.T) {
 
 	_, port, _ := netpkg.SplitHostPort(ln.Addr().String())
 
-	net := NewNetworkExecutor(true)
+	net := NewNetworkExecutor(true, testExecConfig())
 	ctx := context.Background()
 
 	action := types.Action{
@@ -582,7 +587,7 @@ func TestNetwork_ConnectEnabled(t *testing.T) {
 }
 
 func TestNetwork_ConnectFailure(t *testing.T) {
-	net := NewNetworkExecutor(true)
+	net := NewNetworkExecutor(true, testExecConfig())
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -679,10 +684,11 @@ func TestProcess_ShellMissingCommand(t *testing.T) {
 
 func TestFilesystem_WriteOversize(t *testing.T) {
 	cfg := testConfig(t)
-	fs := NewFilesystemExecutor(cfg.RootDir)
+	fs := NewFilesystemExecutor(cfg.RootDir, testExecConfig())
 	ctx := context.Background()
 
-	bigContent := string(make([]byte, maxWriteSize+1))
+	maxWrite := int64(testExecConfig().MaxWriteSizeMB) * 1024 * 1024
+	bigContent := string(make([]byte, maxWrite+1))
 	action := types.Action{
 		ID:   "big-write",
 		Type: types.ActionTypeFileWrite,
@@ -699,7 +705,7 @@ func TestFilesystem_WriteOversize(t *testing.T) {
 
 func TestFilesystem_AbsolutePath(t *testing.T) {
 	cfg := testConfig(t)
-	fs := NewFilesystemExecutor(cfg.RootDir)
+	fs := NewFilesystemExecutor(cfg.RootDir, testExecConfig())
 	ctx := context.Background()
 
 	// Write using absolute path within sandbox root

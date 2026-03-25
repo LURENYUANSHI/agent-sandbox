@@ -104,9 +104,54 @@ func shellCommand() (string, string) {
 	return "sh", "-c"
 }
 
+// parseArgs splits a command-line string into arguments, respecting
+// single and double quoted strings. e.g. `echo "hello world"` becomes
+// ["echo", "hello world"].
+func parseArgs(s string) []string {
+	var args []string
+	var current strings.Builder
+	var quote rune
+	escaped := false
+
+	for _, r := range s {
+		if escaped {
+			current.WriteRune(r)
+			escaped = false
+			continue
+		}
+		if r == '\\' && quote != '\'' {
+			escaped = true
+			continue
+		}
+		if quote != 0 {
+			if r == quote {
+				quote = 0
+			} else {
+				current.WriteRune(r)
+			}
+			continue
+		}
+		switch r {
+		case '"', '\'':
+			quote = r
+		case ' ', '\t':
+			if current.Len() > 0 {
+				args = append(args, current.String())
+				current.Reset()
+			}
+		default:
+			current.WriteRune(r)
+		}
+	}
+	if current.Len() > 0 {
+		args = append(args, current.String())
+	}
+	return args
+}
+
 func splitArgs(s string) []string {
 	if s == "" {
 		return nil
 	}
-	return strings.Fields(s)
+	return parseArgs(s)
 }

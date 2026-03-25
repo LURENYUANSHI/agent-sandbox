@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   ChevronRight,
   ChevronDown,
@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import type { TraceEvent, ActionType, Effect } from "../lib/api";
 import { buildTree } from "../lib/trace-utils";
+import { useTraceStream } from "../hooks/useTraceStream";
+import ConnectionStatus from "./ConnectionStatus";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -192,13 +194,22 @@ function TreeNode({ event, maxDuration, depth }: TreeNodeProps) {
 
 interface TraceViewerProps {
   events: TraceEvent[];
+  sandboxId?: string | null;
 }
 
-export default function TraceViewer({ events }: TraceViewerProps) {
+export default function TraceViewer({ events, sandboxId }: TraceViewerProps) {
+  const stream = useTraceStream(sandboxId ?? null);
   const [eventType, setEventType] = useState("all");
   const [effectType, setEffectType] = useState("all");
 
-  const filtered = events.filter((ev) => {
+  // Merge: live events first (newest on top), then historical
+  const merged = useMemo(() => {
+    const liveIds = new Set(stream.events.map((e) => e.id));
+    const deduped = events.filter((e) => !liveIds.has(e.id));
+    return [...stream.events, ...deduped];
+  }, [stream.events, events]);
+
+  const filtered = merged.filter((ev) => {
     if (eventType !== "all" && ev.action_type !== eventType) return false;
     if (effectType !== "all" && ev.effect !== effectType) return false;
     return true;
@@ -209,18 +220,33 @@ export default function TraceViewer({ events }: TraceViewerProps) {
 
   return (
     <div>
-      <FilterBar
-        eventType={eventType}
-        effectType={effectType}
-        onEventType={setEventType}
-        onEffectType={setEffectType}
-      />
+      <div className="flex items-center justify-between mb-4">
+        <FilterBar
+          eventType={eventType}
+          effectType={effectType}
+          onEventType={setEventType}
+          onEffectType={setEffectType}
+        />
+        {sandboxId && <ConnectionStatus state={stream.connectionState} />}
+      </div>
+      {stream.error && (
+        <p className="mb-2 text-xs text-red-400">{stream.error}</p>
+      )}
       <div className="bg-gray-800 rounded-xl border border-gray-700 py-2">
         {tree.length === 0 && (
           <p className="px-5 py-8 text-center text-gray-500">No trace events</p>
         )}
-        {tree.map((ev) => (
-          <TreeNode key={ev.id} event={ev} maxDuration={maxDuration} depth={0} />
+        {tree.map((ev, i) => (
+          <div
+            key={ev.id}
+            className={
+              i < stream.events.length
+                ? "animate-[fadeIn_0.3s_ease-in-out]"
+                : ""
+            }
+          >
+            <TreeNode event={ev} maxDuration={maxDuration} depth={0} />
+          </div>
         ))}
       </div>
     </div>

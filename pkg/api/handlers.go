@@ -48,6 +48,40 @@ type SandboxResponse struct {
 	CreatedAt string `json:"created_at,omitempty"`
 }
 
+// --- Auth ---
+
+// GenerateTokenRequest is the request body for generating a token.
+type GenerateTokenRequest struct {
+	UserID string `json:"user_id" binding:"required"`
+	Role   string `json:"role" binding:"required"`
+}
+
+func (s *Server) handleGenerateToken(c *gin.Context) {
+	if !s.config.AuthEnabled {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "auth is not enabled"})
+		return
+	}
+
+	var req GenerateTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
+		return
+	}
+
+	if req.Role != "admin" && req.Role != "viewer" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "role must be admin or viewer"})
+		return
+	}
+
+	token, err := GenerateToken(s.config.AuthSecret, req.UserID, req.Role, 24*time.Hour)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "generate token: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
 // --- Health ---
 
 func (s *Server) handleHealth(c *gin.Context) {
@@ -60,9 +94,19 @@ func (s *Server) handleHealth(c *gin.Context) {
 // --- Sandbox CRUD ---
 
 func (s *Server) handleCreateSandbox(c *gin.Context) {
+	if c.Request.Body == nil || c.Request.ContentLength == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "request body is required"})
+		return
+	}
+
 	var req CreateSandboxRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
+		return
+	}
+
+	if verrs := ValidateCreateSandbox(req); verrs != nil {
+		respondValidationError(c, verrs)
 		return
 	}
 
@@ -83,7 +127,7 @@ func (s *Server) handleCreateSandbox(c *gin.Context) {
 	cfg.RootDir = rootDir
 	cfg.TracePath = filepath.Join(rootDir, "traces.db")
 
-	engine := policy.NewEngine()
+	engine := policy.NewEngineWithConfig(s.config.PolicyConfig)
 
 	if req.PolicyFile != "" {
 		p, err := policy.ParseFile(req.PolicyFile)
@@ -109,7 +153,7 @@ func (s *Server) handleCreateSandbox(c *gin.Context) {
 		return
 	}
 
-	exec := executor.NewExecutor(cfg)
+	exec := executor.NewExecutor(cfg, s.config.ExecConfig)
 
 	s.mu.Lock()
 	s.sandboxes[id] = &SandboxEntry{
@@ -189,9 +233,19 @@ func (s *Server) handleExecAction(c *gin.Context) {
 		return
 	}
 
+	if c.Request.Body == nil || c.Request.ContentLength == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "request body is required"})
+		return
+	}
+
 	var req ExecActionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
+		return
+	}
+
+	if verrs := ValidateExecAction(req); verrs != nil {
+		respondValidationError(c, verrs)
 		return
 	}
 
@@ -353,6 +407,14 @@ func (s *Server) handleValidatePolicy(c *gin.Context) {
 		return
 	}
 
+	if verrs := ValidatePolicy(*p); verrs != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"valid":  false,
+			"errors": verrs.Errors,
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"valid":  true,
 		"policy": p,
@@ -394,6 +456,52 @@ func (s *Server) handleWebSocket(c *gin.Context) {
 			return
 		}
 	}
+}
+
+// --- Audit ---
+
+func (s *Server) handleGetAuditLog(c *gin.Context) {
+	if s.auditLogger == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "audit logging is not enabled"})
+		return
+	}
+
+	filter := trace.AuditFilter{
+		SandboxID:  c.Query("sandbox_id"),
+		ActionType: c.Query("action_type"),
+		Effect:     c.Query("effect"),
+	}
+
+	if v := c.Query("start_time"); v != "" {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid start_time: " + err.Error()})
+			return
+		}
+		filter.StartTime = t
+	}
+	if v := c.Query("end_time"); v != "" {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid end_time: " + err.Error()})
+			return
+		}
+		filter.EndTime = t
+	}
+	if v := c.Query("limit"); v != "" {
+		var limit int
+		if _, err := fmt.Sscanf(v, "%d", &limit); err == nil && limit > 0 {
+			filter.Limit = limit
+		}
+	}
+
+	entries, err := s.auditLogger.QueryAuditLog(filter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "query audit log: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"entries": entries})
 }
 
 // --- Helpers ---
