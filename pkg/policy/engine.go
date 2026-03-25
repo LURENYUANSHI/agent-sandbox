@@ -47,9 +47,10 @@ func (e *Engine) Evaluate(_ context.Context, action types.Action) types.PolicyDe
 		if matchesRule(action, rules[i]) {
 			r := rules[i]
 			return types.PolicyDecision{
-				Effect: r.Effect,
-				Rule:   &r,
-				Reason: r.Name,
+				Effect:  r.Effect,
+				Allowed: r.Effect == types.EffectAllow,
+				Rule:    r.Name,
+				Reason:  r.Name,
 			}
 		}
 	}

@@ -3,53 +3,86 @@ package types
 import "time"
 
 // EventType represents the kind of trace event recorded during sandbox operation.
-// Events track the full lifecycle of an action from request through policy
-// evaluation to execution or denial.
 type EventType string
 
+// Lifecycle event types for policy and sandbox tracking.
 const (
-	// EventActionRequested is emitted when an agent submits an action for execution.
 	EventActionRequested EventType = "action.requested"
-	// EventPolicyEvaluated is emitted after the policy engine evaluates an action.
 	EventPolicyEvaluated EventType = "policy.evaluated"
-	// EventActionExecuted is emitted when an action completes successfully.
-	EventActionExecuted EventType = "action.executed"
-	// EventActionDenied is emitted when a policy denies an action.
-	EventActionDenied EventType = "action.denied"
-	// EventActionFailed is emitted when an allowed action fails during execution.
-	EventActionFailed EventType = "action.failed"
-	// EventSandboxCreated is emitted when a new sandbox is initialized.
-	EventSandboxCreated EventType = "sandbox.created"
-	// EventSandboxStopped is emitted when a sandbox is stopped.
-	EventSandboxStopped EventType = "sandbox.stopped"
+	EventActionExecuted  EventType = "action.executed"
+	EventActionDenied    EventType = "action.denied"
+	EventActionFailed    EventType = "action.failed"
+	EventSandboxCreated  EventType = "sandbox.created"
+	EventSandboxStopped  EventType = "sandbox.stopped"
 )
 
-// TraceEvent represents a single event in the sandbox execution trace.
-// Events form a tree via ParentID, allowing reconstruction of the full
-// action lifecycle: request → policy evaluation → execution/denial.
+// Trace-system event types for span-based recording.
+const (
+	EventTypeAction         EventType = "action"
+	EventTypePolicyDecision EventType = "policy_decision"
+	EventTypeSpanStart      EventType = "span_start"
+	EventTypeSpanEnd        EventType = "span_end"
+	EventTypeError          EventType = "error"
+	EventTypeInfo           EventType = "info"
+)
+
+// TraceEvent represents a single recorded event in a trace.
 type TraceEvent struct {
-	// ID is the unique identifier for this event.
-	ID string `json:"id"`
-	// TraceID groups related events into a single trace (OpenTelemetry compatible).
-	TraceID string `json:"trace_id"`
-	// SpanID identifies this specific span within the trace.
-	SpanID string `json:"span_id"`
-	// SandboxID identifies which sandbox generated this event.
-	SandboxID string `json:"sandbox_id"`
-	// ParentID links this event to a parent event, forming a trace tree.
-	ParentID string `json:"parent_id,omitempty"`
-	// Type categorizes the event.
-	Type EventType `json:"type"`
-	// Action contains the action that triggered this event, if applicable.
-	Action *Action `json:"action,omitempty"`
-	// Result contains the outcome of action execution, if applicable.
-	Result *ActionResult `json:"result,omitempty"`
-	// PolicyDecision contains the policy evaluation result, if applicable.
-	PolicyDecision *PolicyDecision `json:"policy_decision,omitempty"`
-	// Timestamp records when the event occurred.
-	Timestamp time.Time `json:"timestamp"`
-	// Duration records how long the event took to process.
-	Duration time.Duration `json:"duration,omitempty"`
-	// Attributes holds additional OpenTelemetry-compatible key-value pairs.
-	Attributes map[string]interface{} `json:"attributes,omitempty"`
+	ID             string            `json:"id"`
+	SandboxID      string            `json:"sandbox_id"`
+	ParentID       string            `json:"parent_id,omitempty"`
+	EventType      EventType         `json:"event_type"`
+	Action         *Action           `json:"action,omitempty"`
+	Result         *ActionResult     `json:"result,omitempty"`
+	PolicyDecision *PolicyDecision   `json:"policy_decision,omitempty"`
+	Timestamp      time.Time         `json:"timestamp"`
+	DurationNs     int64             `json:"duration_ns,omitempty"`
+	Attributes     map[string]string `json:"attributes,omitempty"`
+}
+
+// PolicyDecision records a policy engine's decision about an action.
+type PolicyDecision struct {
+	Effect  Effect `json:"effect,omitempty"`
+	Allowed bool   `json:"allowed"`
+	Rule    string `json:"rule,omitempty"`
+	Reason  string `json:"reason,omitempty"`
+}
+
+// Trace represents a complete execution trace for a sandbox.
+type Trace struct {
+	SandboxID string        `json:"sandbox_id"`
+	Events    []*TraceEvent `json:"events"`
+	RootSpans []*SpanNode   `json:"root_spans,omitempty"`
+}
+
+// SpanNode represents a node in a span tree (parent-child hierarchy).
+type SpanNode struct {
+	Event    *TraceEvent `json:"event"`
+	Children []*SpanNode `json:"children,omitempty"`
+}
+
+// TimelineEntry is a flat chronological entry for display.
+type TimelineEntry struct {
+	Event *TraceEvent `json:"event"`
+	Depth int         `json:"depth"`
+}
+
+// TraceStore defines the interface for trace persistence.
+type TraceStore interface {
+	SaveEvent(event *TraceEvent) error
+	GetEvent(id string) (*TraceEvent, error)
+	ListEvents(sandboxID string) ([]*TraceEvent, error)
+	QueryEvents(query EventQuery) ([]*TraceEvent, error)
+	DeleteEvents(sandboxID string) error
+	Close() error
+}
+
+// EventQuery defines filters for querying trace events.
+type EventQuery struct {
+	SandboxID string    `json:"sandbox_id,omitempty"`
+	EventType EventType `json:"event_type,omitempty"`
+	StartTime time.Time `json:"start_time,omitempty"`
+	EndTime   time.Time `json:"end_time,omitempty"`
+	ParentID  string    `json:"parent_id,omitempty"`
+	Limit     int       `json:"limit,omitempty"`
 }
