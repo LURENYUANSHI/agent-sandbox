@@ -20,8 +20,10 @@ import (
 
 // ServerConfig holds configuration for the API server.
 type ServerConfig struct {
-	Port    int
-	DevMode bool
+	Port        int
+	DevMode     bool
+	AuthEnabled bool
+	AuthSecret  string
 }
 
 // SandboxEntry tracks a running sandbox and its associated resources.
@@ -86,10 +88,12 @@ func (s *Server) setupRoutes() {
 	s.router.Use(RequestID())
 	s.router.Use(Logger())
 	s.router.Use(CORS())
+	s.router.Use(NewAuthMiddleware(s.config.AuthSecret, s.config.AuthEnabled))
 
 	v1 := s.router.Group("/api/v1")
 	{
 		v1.GET("/health", s.handleHealth)
+		v1.POST("/auth/token", s.handleGenerateToken)
 
 		v1.POST("/sandboxes", s.handleCreateSandbox)
 		v1.GET("/sandboxes", s.handleListSandboxes)
