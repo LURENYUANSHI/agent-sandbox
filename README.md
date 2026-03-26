@@ -105,6 +105,42 @@ make run-server
 make run-web
 ```
 
+## MCP Server (AI Agent Integration)
+
+AgentSandbox includes an MCP (Model Context Protocol) server that lets AI agents like Claude use the sandbox as a tool. The MCP server exposes sandbox operations over stdio using JSON-RPC 2.0.
+
+### Setup for Claude Desktop
+
+```bash
+# Build the MCP server
+make build-mcp
+
+# Add to claude_desktop_config.json:
+```
+
+```json
+{
+  "mcpServers": {
+    "agent-sandbox": {
+      "command": "/path/to/bin/agent-sandbox-mcp",
+      "args": ["--policy", "/path/to/configs/default-policy.yaml"]
+    }
+  }
+}
+```
+
+### MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `sandbox_create` | Create an isolated sandbox with policy enforcement |
+| `sandbox_exec` | Execute actions (file, network, process) with policy checks |
+| `sandbox_stop` | Stop and clean up a sandbox |
+| `sandbox_traces` | View execution audit trail |
+| `sandbox_policy_check` | Pre-check if an action would be allowed |
+
+See [mcp/README.md](mcp/README.md) for full documentation.
+
 ## CLI Usage
 
 ```bash
