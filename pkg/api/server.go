@@ -10,12 +10,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	appconfig "github.com/LURENYUANSHI/agent-sandbox/pkg/config"
 	_ "github.com/LURENYUANSHI/agent-sandbox/docs/swagger"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/executor"
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/metrics"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/policy"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/trace"
@@ -109,6 +111,8 @@ func NewServer(cfg ServerConfig) *Server {
 		}
 	}
 
+	metrics.Init()
+
 	s.router = gin.New()
 	s.setupRoutes()
 
@@ -119,12 +123,14 @@ func (s *Server) setupRoutes() {
 	s.router.Use(Recovery())
 	s.router.Use(RequestID())
 	s.router.Use(Logger())
+	s.router.Use(MetricsMiddleware())
 	s.router.Use(CORS(s.config.CORSOrigins))
 	if s.config.RateLimitRPS > 0 {
 		s.router.Use(NewRateLimiter(s.config.RateLimitRPS, s.config.RateLimitBurst))
 	}
 	s.router.Use(NewAuthMiddleware(s.config.AuthSecret, s.config.AuthEnabled))
 
+	s.router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	s.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1 := s.router.Group("/api/v1")
