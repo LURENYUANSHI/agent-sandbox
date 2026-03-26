@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/config"
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/metrics"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
@@ -51,6 +52,12 @@ func NewEngineWithConfig(cfg config.PolicyConfig) *Engine {
 // Evaluate checks an action against built-in rules first, then user policy rules.
 // Implements the types.PolicyEngine interface.
 func (e *Engine) Evaluate(action types.Action) types.PolicyDecision {
+	decision := e.evaluate(action)
+	metrics.PolicyEvaluations.WithLabelValues(string(decision.Effect)).Inc()
+	return decision
+}
+
+func (e *Engine) evaluate(action types.Action) types.PolicyDecision {
 	// Built-in rules are always checked first and cannot be overridden.
 	for _, rule := range e.builtinRules {
 		if decision, matched := rule.Check(action); matched {
