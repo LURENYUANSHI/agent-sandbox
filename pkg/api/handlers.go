@@ -84,8 +84,8 @@ func (s *Server) handleGenerateToken(c *gin.Context) {
 		return
 	}
 
-	if req.Role != "admin" && req.Role != "viewer" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "role must be admin or viewer"})
+	if !ValidRole(req.Role) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "role must be admin, operator, or viewer"})
 		return
 	}
 
