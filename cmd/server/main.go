@@ -15,6 +15,14 @@ import (
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/config"
 )
 
+// @title AgentSandbox API
+// @version 0.3.0
+// @description AI Agent Security Sandbox - Runtime isolation, policy enforcement, trace recording & replay
+// @host localhost:8080
+// @BasePath /api/v1
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	// Load application config from env (or YAML file via --config flag)
 	var appCfg *config.AppConfig

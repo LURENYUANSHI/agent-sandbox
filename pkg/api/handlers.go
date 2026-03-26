@@ -19,6 +19,11 @@ import (
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
+// ErrorResponse represents a JSON error response.
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
 // --- Request/Response types ---
 
 // CreateSandboxRequest is the request body for creating a sandbox.
@@ -56,6 +61,17 @@ type GenerateTokenRequest struct {
 	Role   string `json:"role" binding:"required"`
 }
 
+// handleGenerateToken generates a JWT token for API authentication.
+// @Summary Generate auth token
+// @Description Generate a JWT token for API authentication with the given user ID and role
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body GenerateTokenRequest true "Token request with user_id and role"
+// @Success 200 {object} map[string]string "token"
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /auth/token [post]
 func (s *Server) handleGenerateToken(c *gin.Context) {
 	if !s.config.AuthEnabled {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "auth is not enabled"})
@@ -84,6 +100,13 @@ func (s *Server) handleGenerateToken(c *gin.Context) {
 
 // --- Health ---
 
+// handleHealth returns the server health status.
+// @Summary Health check
+// @Description Returns server health status and current time
+// @Tags health
+// @Produce json
+// @Success 200 {object} map[string]string "status and time"
+// @Router /health [get]
 func (s *Server) handleHealth(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",
@@ -93,6 +116,18 @@ func (s *Server) handleHealth(c *gin.Context) {
 
 // --- Sandbox CRUD ---
 
+// handleCreateSandbox creates a new sandbox instance.
+// @Summary Create a new sandbox
+// @Description Create a new sandbox with the given configuration including name, policy, and root directory
+// @Tags sandboxes
+// @Accept json
+// @Produce json
+// @Param body body CreateSandboxRequest true "Sandbox configuration"
+// @Success 201 {object} SandboxResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /sandboxes [post]
 func (s *Server) handleCreateSandbox(c *gin.Context) {
 	if c.Request.Body == nil || c.Request.ContentLength == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "request body is required"})
@@ -173,6 +208,15 @@ func (s *Server) handleCreateSandbox(c *gin.Context) {
 	})
 }
 
+// handleListSandboxes returns all sandboxes, optionally filtered by status.
+// @Summary List sandboxes
+// @Description List all sandboxes, optionally filtered by status
+// @Tags sandboxes
+// @Produce json
+// @Param status query string false "Filter by sandbox status (e.g. running, stopped)"
+// @Success 200 {object} map[string][]SandboxResponse "sandboxes"
+// @Security BearerAuth
+// @Router /sandboxes [get]
 func (s *Server) handleListSandboxes(c *gin.Context) {
 	statusFilter := c.Query("status")
 
@@ -196,6 +240,16 @@ func (s *Server) handleListSandboxes(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"sandboxes": result})
 }
 
+// handleGetSandbox returns details of a specific sandbox.
+// @Summary Get sandbox
+// @Description Get details of a specific sandbox by ID
+// @Tags sandboxes
+// @Produce json
+// @Param id path string true "Sandbox ID"
+// @Success 200 {object} SandboxResponse
+// @Failure 404 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /sandboxes/{id} [get]
 func (s *Server) handleGetSandbox(c *gin.Context) {
 	entry, ok := s.getSandboxEntry(c)
 	if !ok {
@@ -210,6 +264,17 @@ func (s *Server) handleGetSandbox(c *gin.Context) {
 	})
 }
 
+// handleStartSandbox starts a sandbox.
+// @Summary Start sandbox
+// @Description Start a stopped sandbox by ID
+// @Tags sandboxes
+// @Produce json
+// @Param id path string true "Sandbox ID"
+// @Success 200 {object} map[string]string "id and status"
+// @Failure 404 {object} ErrorResponse
+// @Failure 409 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /sandboxes/{id}/start [post]
 func (s *Server) handleStartSandbox(c *gin.Context) {
 	entry, ok := s.getSandboxEntry(c)
 	if !ok {
@@ -227,6 +292,20 @@ func (s *Server) handleStartSandbox(c *gin.Context) {
 	})
 }
 
+// handleExecAction executes an action within a sandbox.
+// @Summary Execute action in sandbox
+// @Description Execute an action (file, network, process, shell) within a sandbox. The action is evaluated against the sandbox policy before execution.
+// @Tags sandboxes
+// @Accept json
+// @Produce json
+// @Param id path string true "Sandbox ID"
+// @Param body body ExecActionRequest true "Action to execute"
+// @Success 200 {object} map[string]interface{} "action_id, success, output, error, exit_code, duration"
+// @Failure 400 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse "Action denied by policy"
+// @Failure 404 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /sandboxes/{id}/exec [post]
 func (s *Server) handleExecAction(c *gin.Context) {
 	entry, ok := s.getSandboxEntry(c)
 	if !ok {
@@ -278,6 +357,17 @@ func (s *Server) handleExecAction(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+// handleStopSandbox stops a running sandbox.
+// @Summary Stop sandbox
+// @Description Stop a running sandbox by ID
+// @Tags sandboxes
+// @Produce json
+// @Param id path string true "Sandbox ID"
+// @Success 200 {object} map[string]string "id and status"
+// @Failure 404 {object} ErrorResponse
+// @Failure 409 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /sandboxes/{id}/stop [post]
 func (s *Server) handleStopSandbox(c *gin.Context) {
 	entry, ok := s.getSandboxEntry(c)
 	if !ok {
@@ -295,6 +385,16 @@ func (s *Server) handleStopSandbox(c *gin.Context) {
 	})
 }
 
+// handleDestroySandbox destroys a sandbox and cleans up resources.
+// @Summary Destroy sandbox
+// @Description Destroy a sandbox by ID, stopping it if running and cleaning up all resources
+// @Tags sandboxes
+// @Produce json
+// @Param id path string true "Sandbox ID"
+// @Success 200 {object} map[string]interface{} "id and destroyed status"
+// @Failure 404 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /sandboxes/{id} [delete]
 func (s *Server) handleDestroySandbox(c *gin.Context) {
 	id := c.Param("id")
 
@@ -318,6 +418,17 @@ func (s *Server) handleDestroySandbox(c *gin.Context) {
 
 // --- Traces ---
 
+// handleGetTraces returns all trace events for a sandbox.
+// @Summary Get sandbox traces
+// @Description Get all trace events recorded for a specific sandbox
+// @Tags traces
+// @Produce json
+// @Param id path string true "Sandbox ID"
+// @Success 200 {object} map[string]interface{} "events array"
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /sandboxes/{id}/traces [get]
 func (s *Server) handleGetTraces(c *gin.Context) {
 	entry, ok := s.getSandboxEntry(c)
 	if !ok {
@@ -335,6 +446,17 @@ func (s *Server) handleGetTraces(c *gin.Context) {
 
 // --- Replay ---
 
+// handleStartReplay starts a trace replay session for a sandbox.
+// @Summary Start replay session
+// @Description Start a trace replay session for a sandbox, loading all recorded events for step-through playback
+// @Tags replay
+// @Produce json
+// @Param id path string true "Sandbox ID"
+// @Success 200 {object} map[string]interface{} "sandbox_id, total_events, status"
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /sandboxes/{id}/replay [post]
 func (s *Server) handleStartReplay(c *gin.Context) {
 	entry, ok := s.getSandboxEntry(c)
 	if !ok {
@@ -359,6 +481,16 @@ func (s *Server) handleStartReplay(c *gin.Context) {
 	})
 }
 
+// handleReplayNext advances the replay session to the next event.
+// @Summary Get next replay event
+// @Description Advance the replay session and return the next trace event
+// @Tags replay
+// @Produce json
+// @Param id path string true "Sandbox ID"
+// @Success 200 {object} map[string]interface{} "event, has_more, position, total"
+// @Failure 404 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /sandboxes/{id}/replay/next [get]
 func (s *Server) handleReplayNext(c *gin.Context) {
 	id := c.Param("id")
 
@@ -391,6 +523,17 @@ func (s *Server) handleReplayNext(c *gin.Context) {
 
 // --- Policy ---
 
+// handleValidatePolicy validates a policy YAML document.
+// @Summary Validate policy
+// @Description Validate a YAML policy document for correctness without applying it
+// @Tags policies
+// @Accept json
+// @Produce json
+// @Param body body ValidatePolicyRequest true "Policy content as YAML string"
+// @Success 200 {object} map[string]interface{} "valid, errors, policy"
+// @Failure 400 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /policies/validate [post]
 func (s *Server) handleValidatePolicy(c *gin.Context) {
 	var req ValidatePolicyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -423,6 +566,15 @@ func (s *Server) handleValidatePolicy(c *gin.Context) {
 
 // --- WebSocket ---
 
+// handleWebSocket establishes a WebSocket connection for real-time trace streaming.
+// @Summary WebSocket trace stream
+// @Description Establish a WebSocket connection to receive real-time trace events for a sandbox
+// @Tags websocket
+// @Param id path string true "Sandbox ID"
+// @Success 101 {string} string "WebSocket connection established"
+// @Failure 404 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /sandboxes/{id}/ws [get]
 func (s *Server) handleWebSocket(c *gin.Context) {
 	id := c.Param("id")
 
@@ -460,6 +612,23 @@ func (s *Server) handleWebSocket(c *gin.Context) {
 
 // --- Audit ---
 
+// handleGetAuditLog returns audit log entries with optional filters.
+// @Summary Get audit log
+// @Description Query the persistent audit log with optional filters for sandbox ID, action type, effect, time range, and limit
+// @Tags audit
+// @Produce json
+// @Param sandbox_id query string false "Filter by sandbox ID"
+// @Param action_type query string false "Filter by action type"
+// @Param effect query string false "Filter by effect (allow, deny, audit)"
+// @Param start_time query string false "Filter start time (RFC3339)"
+// @Param end_time query string false "Filter end time (RFC3339)"
+// @Param limit query int false "Maximum number of entries to return"
+// @Success 200 {object} map[string]interface{} "entries array"
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse "Audit logging not enabled"
+// @Security BearerAuth
+// @Router /audit [get]
 func (s *Server) handleGetAuditLog(c *gin.Context) {
 	if s.auditLogger == nil {
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "audit logging is not enabled"})
