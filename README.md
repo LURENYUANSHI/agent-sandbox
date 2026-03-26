@@ -51,6 +51,28 @@ AgentSandbox provides a secure execution layer that:
 Flow: Agent Action → Policy Check → Execute → Record Trace
 ```
 
+## Quick Demo
+
+Try AgentSandbox instantly with the interactive demo:
+
+```bash
+# Run the interactive demo (shows policy enforcement, tracing, and replay)
+go run examples/demo/main.go
+
+# Or use the one-command demo script
+bash scripts/demo.sh
+```
+
+### More Examples
+
+```bash
+# Simulated coding agent: reads, modifies, and formats Go source files
+go run examples/coding-agent/main.go
+
+# Simulated web scraper: HTTP requests with filesystem restrictions
+go run examples/web-scraper/main.go
+```
+
 ## Quick Start
 
 ### Using Docker Compose (recommended)
