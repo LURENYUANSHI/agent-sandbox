@@ -10,8 +10,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	appconfig "github.com/LURENYUANSHI/agent-sandbox/pkg/config"
+	_ "github.com/LURENYUANSHI/agent-sandbox/docs/swagger"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/executor"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/policy"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
@@ -121,6 +124,8 @@ func (s *Server) setupRoutes() {
 		s.router.Use(NewRateLimiter(s.config.RateLimitRPS, s.config.RateLimitBurst))
 	}
 	s.router.Use(NewAuthMiddleware(s.config.AuthSecret, s.config.AuthEnabled))
+
+	s.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1 := s.router.Group("/api/v1")
 	{

@@ -31,6 +31,14 @@ type ActivityEventResponse struct {
 	Timestamp    string  `json:"timestamp"`
 }
 
+// handleGetDashboardStats returns aggregate statistics for the dashboard.
+// @Summary Get dashboard statistics
+// @Description Returns aggregate statistics including active sandboxes, total/denied actions, and average response time
+// @Tags dashboard
+// @Produce json
+// @Success 200 {object} DashboardStatsResponse
+// @Security BearerAuth
+// @Router /dashboard/stats [get]
 func (s *Server) handleGetDashboardStats(c *gin.Context) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -73,6 +81,14 @@ func (s *Server) handleGetDashboardStats(c *gin.Context) {
 	c.JSON(http.StatusOK, stats)
 }
 
+// handleGetRecentActivity returns the most recent trace events across all sandboxes.
+// @Summary Get recent activity
+// @Description Returns the 20 most recent trace events across all sandboxes, sorted by timestamp descending
+// @Tags dashboard
+// @Produce json
+// @Success 200 {array} ActivityEventResponse
+// @Security BearerAuth
+// @Router /dashboard/activity [get]
 func (s *Server) handleGetRecentActivity(c *gin.Context) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

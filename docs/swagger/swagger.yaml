@@ -1,0 +1,586 @@
+basePath: /api/v1
+definitions:
+  api.ActivityEventResponse:
+    properties:
+      action_detail:
+        type: string
+      action_type:
+        type: string
+      duration_ms:
+        type: number
+      effect:
+        type: string
+      event_type:
+        type: string
+      id:
+        type: string
+      sandbox_id:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  api.CreateSandboxRequest:
+    properties:
+      name:
+        type: string
+      policy_file:
+        type: string
+      root_dir:
+        type: string
+    type: object
+  api.DashboardStatsResponse:
+    properties:
+      active_sandboxes:
+        type: integer
+      avg_response_ms:
+        type: number
+      denied_actions:
+        type: integer
+      total_actions:
+        type: integer
+    type: object
+  api.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  api.ExecActionRequest:
+    properties:
+      params:
+        additionalProperties:
+          type: string
+        type: object
+      type:
+        type: string
+    type: object
+  api.GenerateTokenRequest:
+    properties:
+      role:
+        type: string
+      user_id:
+        type: string
+    required:
+    - role
+    - user_id
+    type: object
+  api.SandboxResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      root_dir:
+        type: string
+      status:
+        type: string
+    type: object
+  api.ValidatePolicyRequest:
+    properties:
+      content:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: AI Agent Security Sandbox - Runtime isolation, policy enforcement,
+    trace recording & replay
+  title: AgentSandbox API
+  version: 0.3.0
+paths:
+  /audit:
+    get:
+      description: Query the persistent audit log with optional filters for sandbox
+        ID, action type, effect, time range, and limit
+      parameters:
+      - description: Filter by sandbox ID
+        in: query
+        name: sandbox_id
+        type: string
+      - description: Filter by action type
+        in: query
+        name: action_type
+        type: string
+      - description: Filter by effect (allow, deny, audit)
+        in: query
+        name: effect
+        type: string
+      - description: Filter start time (RFC3339)
+        in: query
+        name: start_time
+        type: string
+      - description: Filter end time (RFC3339)
+        in: query
+        name: end_time
+        type: string
+      - description: Maximum number of entries to return
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: entries array
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "503":
+          description: Audit logging not enabled
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get audit log
+      tags:
+      - audit
+  /auth/token:
+    post:
+      consumes:
+      - application/json
+      description: Generate a JWT token for API authentication with the given user
+        ID and role
+      parameters:
+      - description: Token request with user_id and role
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/api.GenerateTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Generate auth token
+      tags:
+      - auth
+  /dashboard/activity:
+    get:
+      description: Returns the 20 most recent trace events across all sandboxes, sorted
+        by timestamp descending
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api.ActivityEventResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get recent activity
+      tags:
+      - dashboard
+  /dashboard/stats:
+    get:
+      description: Returns aggregate statistics including active sandboxes, total/denied
+        actions, and average response time
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.DashboardStatsResponse'
+      security:
+      - BearerAuth: []
+      summary: Get dashboard statistics
+      tags:
+      - dashboard
+  /health:
+    get:
+      description: Returns server health status and current time
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: status and time
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - health
+  /policies/validate:
+    post:
+      consumes:
+      - application/json
+      description: Validate a YAML policy document for correctness without applying
+        it
+      parameters:
+      - description: Policy content as YAML string
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/api.ValidatePolicyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: valid, errors, policy
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Validate policy
+      tags:
+      - policies
+  /sandboxes:
+    get:
+      description: List all sandboxes, optionally filtered by status
+      parameters:
+      - description: Filter by sandbox status (e.g. running, stopped)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: sandboxes
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/api.SandboxResponse'
+              type: array
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List sandboxes
+      tags:
+      - sandboxes
+    post:
+      consumes:
+      - application/json
+      description: Create a new sandbox with the given configuration including name,
+        policy, and root directory
+      parameters:
+      - description: Sandbox configuration
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateSandboxRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api.SandboxResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new sandbox
+      tags:
+      - sandboxes
+  /sandboxes/{id}:
+    delete:
+      description: Destroy a sandbox by ID, stopping it if running and cleaning up
+        all resources
+      parameters:
+      - description: Sandbox ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: id and destroyed status
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Destroy sandbox
+      tags:
+      - sandboxes
+    get:
+      description: Get details of a specific sandbox by ID
+      parameters:
+      - description: Sandbox ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SandboxResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get sandbox
+      tags:
+      - sandboxes
+  /sandboxes/{id}/exec:
+    post:
+      consumes:
+      - application/json
+      description: Execute an action (file, network, process, shell) within a sandbox.
+        The action is evaluated against the sandbox policy before execution.
+      parameters:
+      - description: Sandbox ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Action to execute
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/api.ExecActionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: action_id, success, output, error, exit_code, duration
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Action denied by policy
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Execute action in sandbox
+      tags:
+      - sandboxes
+  /sandboxes/{id}/replay:
+    post:
+      description: Start a trace replay session for a sandbox, loading all recorded
+        events for step-through playback
+      parameters:
+      - description: Sandbox ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: sandbox_id, total_events, status
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Start replay session
+      tags:
+      - replay
+  /sandboxes/{id}/replay/next:
+    get:
+      description: Advance the replay session and return the next trace event
+      parameters:
+      - description: Sandbox ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: event, has_more, position, total
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get next replay event
+      tags:
+      - replay
+  /sandboxes/{id}/start:
+    post:
+      description: Start a stopped sandbox by ID
+      parameters:
+      - description: Sandbox ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: id and status
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Start sandbox
+      tags:
+      - sandboxes
+  /sandboxes/{id}/stop:
+    post:
+      description: Stop a running sandbox by ID
+      parameters:
+      - description: Sandbox ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: id and status
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Stop sandbox
+      tags:
+      - sandboxes
+  /sandboxes/{id}/traces:
+    get:
+      description: Get all trace events recorded for a specific sandbox
+      parameters:
+      - description: Sandbox ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: events array
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get sandbox traces
+      tags:
+      - traces
+  /sandboxes/{id}/ws:
+    get:
+      description: Establish a WebSocket connection to receive real-time trace events
+        for a sandbox
+      parameters:
+      - description: Sandbox ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "101":
+          description: WebSocket connection established
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: WebSocket trace stream
+      tags:
+      - websocket
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
