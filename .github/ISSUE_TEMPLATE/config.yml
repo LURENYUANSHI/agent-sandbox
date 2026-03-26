@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/LURENYUANSHI/agent-sandbox/tree/main/docs
+    about: Read the documentation

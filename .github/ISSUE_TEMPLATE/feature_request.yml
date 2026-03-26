@@ -1,0 +1,47 @@
+name: Feature Request
+description: Suggest a new feature for AgentSandbox
+title: "[Feature]: "
+labels: ["type::feature", "status::backlog"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for suggesting a feature!
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear description of the feature you'd like
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe the problem or use case this feature would address
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: How do you think this should work?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds you've considered
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Sandbox Runtime
+        - Policy Engine
+        - Trace System
+        - CLI
+        - REST API
+        - Web Dashboard
+        - Docker
+        - Other
