@@ -1,0 +1,2018 @@
+=== RUN   TestCLIVersion
+--- PASS: TestCLIVersion (0.02s)
+=== RUN   TestCLIHelp
+--- PASS: TestCLIHelp (0.02s)
+=== RUN   TestCLIUnknownCommand
+--- PASS: TestCLIUnknownCommand (0.02s)
+=== RUN   TestCLIInvalidSandboxID
+--- PASS: TestCLIInvalidSandboxID (0.02s)
+=== RUN   TestCLISandboxLifecycle
+=== RUN   TestCLISandboxLifecycle/create
+=== RUN   TestCLISandboxLifecycle/list
+=== RUN   TestCLISandboxLifecycle/list_json
+=== RUN   TestCLISandboxLifecycle/start
+=== RUN   TestCLISandboxLifecycle/exec
+=== RUN   TestCLISandboxLifecycle/trace
+=== RUN   TestCLISandboxLifecycle/stop
+--- PASS: TestCLISandboxLifecycle (0.07s)
+    --- PASS: TestCLISandboxLifecycle/create (0.02s)
+    --- PASS: TestCLISandboxLifecycle/list (0.01s)
+    --- PASS: TestCLISandboxLifecycle/list_json (0.01s)
+    --- PASS: TestCLISandboxLifecycle/start (0.01s)
+    --- PASS: TestCLISandboxLifecycle/exec (0.01s)
+    --- PASS: TestCLISandboxLifecycle/trace (0.01s)
+    --- PASS: TestCLISandboxLifecycle/stop (0.01s)
+=== RUN   TestCLIPolicyValidate
+--- PASS: TestCLIPolicyValidate (0.01s)
+=== RUN   TestCLIPolicyValidateInvalid
+--- PASS: TestCLIPolicyValidateInvalid (0.01s)
+PASS
+coverage: 70.1% of statements
+ok  	github.com/LURENYUANSHI/agent-sandbox/cmd/sandbox	0.446s	coverage: 70.1% of statements
+	github.com/LURENYUANSHI/agent-sandbox/cmd/server		coverage: 0.0% of statements
+	github.com/LURENYUANSHI/agent-sandbox/docs/swagger		coverage: 0.0% of statements
+	github.com/LURENYUANSHI/agent-sandbox/examples/coding-agent		coverage: 0.0% of statements
+	github.com/LURENYUANSHI/agent-sandbox/examples/demo		coverage: 0.0% of statements
+	github.com/LURENYUANSHI/agent-sandbox/examples/web-scraper		coverage: 0.0% of statements
+	github.com/LURENYUANSHI/agent-sandbox/mcp		coverage: 0.0% of statements
+=== RUN   TestHealthEndpoint
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [5b0c29a1-ae6a-4d37-90d2-c8b2170fc522] GET /api/v1/health 200 0s
+--- PASS: TestHealthEndpoint (0.01s)
+=== RUN   TestCreateSandbox
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [d003dd42-27a6-4334-b361-9ad9b7728179] POST /api/v1/sandboxes 201 0s
+--- PASS: TestCreateSandbox (0.00s)
+=== RUN   TestCreateSandboxDefaultName
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [5c78baf3-0734-46a2-995c-268cd73442d1] POST /api/v1/sandboxes 201 0s
+--- PASS: TestCreateSandboxDefaultName (0.00s)
+=== RUN   TestListSandboxesEmpty
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [0c6d65c1-c10d-44de-82fe-e8d736d471b0] GET /api/v1/sandboxes 200 70.4µs
+--- PASS: TestListSandboxesEmpty (0.00s)
+=== RUN   TestListSandboxesAfterCreate
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [f693eb9e-c699-49ee-81c1-cc827b42088e] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [92ab7a89-3a49-4f0c-b7cf-0a93dff1ed5c] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [db459d20-5bf3-4656-b51f-65aabc2cb86b] GET /api/v1/sandboxes 200 0s
+--- PASS: TestListSandboxesAfterCreate (0.00s)
+=== RUN   TestGetSandbox
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [0612ad1c-b530-485e-827d-998d8a460b97] POST /api/v1/sandboxes 201 22µs
+2026/03/26 22:31:32 [26f41e5d-f569-4796-85a1-882a0bb1665c] GET /api/v1/sandboxes/3f6df866-973c-470c-9d8d-71da1d12badc 200 0s
+--- PASS: TestGetSandbox (0.00s)
+=== RUN   TestGetSandboxNotFound
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [9b55806f-014f-4eb8-be41-fe346298e918] GET /api/v1/sandboxes/nonexistent 404 0s
+--- PASS: TestGetSandboxNotFound (0.00s)
+=== RUN   TestStartSandbox
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [561519d9-ad75-4e68-bffe-02e14497a575] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [e84d2c21-30e8-4c48-b1ef-cf95aee8b64f] POST /api/v1/sandboxes/8fb3d507-f7c1-4d59-af20-6afb6e42e777/start 200 1.04ms
+--- PASS: TestStartSandbox (0.00s)
+=== RUN   TestStartSandboxNotFound
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [1460d447-fc9f-4e92-9ffb-adb5dde426a0] POST /api/v1/sandboxes/nonexistent/start 404 0s
+--- PASS: TestStartSandboxNotFound (0.00s)
+=== RUN   TestStopSandbox
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [b6ab2bf2-6cd1-47d1-9180-cd49ad130e80] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [c9664ce3-d2cc-4b97-9abe-b2638d427c1b] POST /api/v1/sandboxes/5b2b6969-0768-4c9e-bcbe-4dfa7e4347da/start 200 515.3µs
+2026/03/26 22:31:32 [998ac342-4d54-4c1a-af07-369e14726dea] POST /api/v1/sandboxes/5b2b6969-0768-4c9e-bcbe-4dfa7e4347da/stop 200 0s
+--- PASS: TestStopSandbox (0.00s)
+=== RUN   TestDestroySandbox
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [bbe9a543-e80f-4b17-ab08-ecf1a1ef6b7d] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [eefdd59d-3345-45e6-88ee-6d6ea2c9fa60] DELETE /api/v1/sandboxes/84f11db2-f783-4a74-a1fe-baad7705d3b4 200 0s
+2026/03/26 22:31:32 [6a4340a7-f115-4d5e-8012-7d3f6c02aa21] GET /api/v1/sandboxes/84f11db2-f783-4a74-a1fe-baad7705d3b4 404 0s
+--- PASS: TestDestroySandbox (0.00s)
+=== RUN   TestDestroyNotFound
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [e7c76550-4f80-490d-8a18-2eb715bd785a] DELETE /api/v1/sandboxes/nonexistent 404 0s
+--- PASS: TestDestroyNotFound (0.00s)
+=== RUN   TestExecAction
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [adca1d80-33c9-40e5-a8f9-23e1c8fd0914] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [da50f6fb-059d-48a2-aac7-6d1270823326] POST /api/v1/sandboxes/5b6a0e7e-698e-4fa3-9330-a6819875b8f5/start 200 0s
+2026/03/26 22:31:32 [760eeef6-c1e7-4f0a-a834-77d08ccb612e] POST /api/v1/sandboxes/5b6a0e7e-698e-4fa3-9330-a6819875b8f5/exec 200 1.0398ms
+--- PASS: TestExecAction (0.00s)
+=== RUN   TestExecBadRequest
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [290459f7-641e-471a-88ff-3f660f1bd536] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [bd364608-0fd3-4820-99f2-cef41297d62d] POST /api/v1/sandboxes/e6ab01d5-2ddd-4763-b77a-db831e55397b/start 200 518.9µs
+2026/03/26 22:31:32 [f1b8dc98-f637-453c-bb23-07e497cd52a6] POST /api/v1/sandboxes/e6ab01d5-2ddd-4763-b77a-db831e55397b/exec 400 0s
+--- PASS: TestExecBadRequest (0.00s)
+=== RUN   TestGetTraces
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [e904c625-92c9-420e-927d-d95c6dadd4fd] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [53024d73-f244-4c94-a371-e4c9cb98387c] POST /api/v1/sandboxes/aad2a96e-42b0-4659-9564-c55c57e15f5e/start 200 521.5µs
+2026/03/26 22:31:32 [9fa91789-f64c-4a1d-8892-f03eeef25f16] GET /api/v1/sandboxes/aad2a96e-42b0-4659-9564-c55c57e15f5e/traces 200 0s
+--- PASS: TestGetTraces (0.00s)
+=== RUN   TestReplay
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [d38d56b6-8972-4114-97d2-b1c622550b1d] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [8b9f557f-d1c2-4620-991b-8e6a7d5996cc] POST /api/v1/sandboxes/b5e93509-d379-4dfd-9491-3477091757a6/start 200 515.5µs
+2026/03/26 22:31:32 [07a5a3d3-0049-45d8-9bd3-98a97a85efb5] POST /api/v1/sandboxes/b5e93509-d379-4dfd-9491-3477091757a6/replay 200 0s
+2026/03/26 22:31:32 [958d87c1-7c0f-4d05-b17a-c3100edf5ca6] GET /api/v1/sandboxes/b5e93509-d379-4dfd-9491-3477091757a6/replay/next 200 0s
+--- PASS: TestReplay (0.00s)
+=== RUN   TestReplayNotFound
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [572a2a1e-9871-4e53-906c-f35267cac34b] GET /api/v1/sandboxes/nonexistent/replay/next 404 0s
+--- PASS: TestReplayNotFound (0.00s)
+=== RUN   TestValidatePolicy
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [6b764dee-22c5-455e-93b9-b8e808622672] POST /api/v1/policies/validate 200 0s
+--- PASS: TestValidatePolicy (0.00s)
+=== RUN   TestValidatePolicyInvalid
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [ef440fae-e9ba-45e3-9738-b48b2b7f6a49] POST /api/v1/policies/validate 200 0s
+--- PASS: TestValidatePolicyInvalid (0.00s)
+=== RUN   TestRequestIDMiddleware
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [98664830-1917-4eaf-a9af-bd84c648a872] GET /api/v1/health 200 0s
+--- PASS: TestRequestIDMiddleware (0.00s)
+=== RUN   TestCORSHeaders
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [d9859233-ffa8-4871-8375-029e713af96c] OPTIONS /api/v1/health 204 0s
+--- PASS: TestCORSHeaders (0.00s)
+=== RUN   TestWebSocketConnection
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [5418ca81-6750-4cea-837d-f505df371c7b] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [fc6e5180-f8f0-44b2-a771-8421a7807998] GET /api/v1/sandboxes/9523524d-9ba6-4d0d-9a66-709288db0393/ws 200 0s
+--- PASS: TestWebSocketConnection (0.00s)
+=== RUN   TestWebSocketNotFoundSandbox
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [9576d979-3d66-4180-99aa-3f7b85528195] GET /api/v1/sandboxes/nonexistent/ws 404 0s
+--- PASS: TestWebSocketNotFoundSandbox (0.00s)
+=== RUN   TestListSandboxesFilterByStatus
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [34ca40a9-0f25-4392-a8d5-a05ea2650956] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [8eded74d-7b10-41d4-9d46-00e4a11005df] POST /api/v1/sandboxes/9b0095c5-b8ac-471f-909a-c6a384df19b3/start 200 0s
+2026/03/26 22:31:32 [179cf59e-e125-486d-ba5e-e4d1fc9f345f] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [ac5348ff-306c-4a81-b077-f12a886c5d68] GET /api/v1/sandboxes 200 0s
+--- PASS: TestListSandboxesFilterByStatus (0.00s)
+=== RUN   TestDashboardStatsMultipleSandboxes
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [19fa92de-b3f2-49ee-a9f3-d4c39d5a1388] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [418823b3-8a70-4e4b-ad4f-819cebe30953] POST /api/v1/sandboxes/6a59217e-9528-4832-858f-0c7c721ebc92/start 200 10.7µs
+2026/03/26 22:31:32 [d599caf4-381d-44d0-aee4-bad3aceb79f1] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [948df461-c9e7-4e4f-a68b-b16fe8132833] POST /api/v1/sandboxes/85a8b2b0-dc50-4a46-b084-22cc59230944/start 200 0s
+2026/03/26 22:31:32 [f062847e-83e5-4ec9-973b-3b877b1a2c95] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [7ce6af1d-2a9b-46cd-8e0a-9f6ad7a7f5c4] GET /api/v1/dashboard/stats 200 0s
+--- PASS: TestDashboardStatsMultipleSandboxes (0.00s)
+=== RUN   TestDashboardActivityWithEvents
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [39a5b8f2-37af-4284-9c55-7d01e172133d] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [96aba6c3-f3fc-46d3-b58c-34184e30e649] POST /api/v1/sandboxes/e973dc8d-13fa-4903-af47-7649078a1180/start 200 0s
+2026/03/26 22:31:32 [525ae00a-7b71-4cbf-8e8e-e57f1154127b] GET /api/v1/dashboard/activity 200 0s
+--- PASS: TestDashboardActivityWithEvents (0.00s)
+=== RUN   TestAuditEndpointDisabled
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [acb72f55-ce82-41c7-b920-4bd397c3ba08] GET /api/v1/audit 503 0s
+--- PASS: TestAuditEndpointDisabled (0.00s)
+=== RUN   TestAuditEndpointWithFilters
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [d9faa1b7-f3d7-4cd5-8645-7976d36a427e] GET /api/v1/audit 200 524.9µs
+2026/03/26 22:31:32 [fa57bef0-a475-44ef-821d-91e5d0e7a6e9] GET /api/v1/audit 200 0s
+2026/03/26 22:31:32 [f17eef29-41a9-4329-914c-d52462b1f454] GET /api/v1/audit 200 0s
+2026/03/26 22:31:32 [ec87343e-8029-4f52-9205-cd34cf1105b3] GET /api/v1/audit 200 0s
+--- PASS: TestAuditEndpointWithFilters (0.06s)
+=== RUN   TestAuditEndpointInvalidTime
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [05c5a9ac-9991-4349-9759-e48186bfa423] GET /api/v1/audit 400 0s
+--- PASS: TestAuditEndpointInvalidTime (0.03s)
+=== RUN   TestAuthTokenEndpoint
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [bd3c290a-d408-4343-a9d8-9689658dbc26] POST /api/v1/auth/token 200 519µs
+--- PASS: TestAuthTokenEndpoint (0.00s)
+=== RUN   TestAuthTokenEndpointDisabled
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [71555662-9c11-4a6e-96c6-e6d6dc496bfc] POST /api/v1/auth/token 400 0s
+--- PASS: TestAuthTokenEndpointDisabled (0.00s)
+=== RUN   TestAuthTokenInvalidRole
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [5b6a81c1-b4cf-4882-bb8e-8a358d2723cc] POST /api/v1/auth/token 400 0s
+--- PASS: TestAuthTokenInvalidRole (0.00s)
+=== RUN   TestRateLimiterReturns429
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (8 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (8 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (8 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (9 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (9 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (9 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (9 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (9 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (9 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (9 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (9 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (9 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (9 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (9 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (9 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (9 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (9 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (9 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (9 handlers)
+2026/03/26 22:31:32 [32efd600-6c6d-44eb-9678-a7e1da37c8a6] GET /api/v1/health 200 0s
+2026/03/26 22:31:32 [d102be0e-3eaa-48b4-a7b0-78e97a34a852] GET /api/v1/health 429 0s
+--- PASS: TestRateLimiterReturns429 (0.00s)
+=== RUN   TestValidationErrorStructured
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [8fbb2ac5-bcf6-461c-ac11-3493908f3faa] POST /api/v1/sandboxes 400 0s
+--- PASS: TestValidationErrorStructured (0.00s)
+=== RUN   TestExecValidationErrorMissingType
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [7ea4edb9-824f-4b79-a994-2213de8bc876] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [1ed9337a-f574-4640-8cea-1cb76be87744] POST /api/v1/sandboxes/c1844dec-b85d-4524-89d6-d73b850c6bb5/start 200 0s
+2026/03/26 22:31:32 [91834307-6bed-4625-810c-ba08e07c5b3e] POST /api/v1/sandboxes/c1844dec-b85d-4524-89d6-d73b850c6bb5/exec 400 505.7µs
+--- PASS: TestExecValidationErrorMissingType (0.00s)
+=== RUN   TestWebSocketReceivesEvents
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [2a8bdd5d-d566-4d7a-8d00-bd7547267f72] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [7a48e104-950d-4e74-98fe-e61d8f86a377] POST /api/v1/sandboxes/045d1f03-fe32-433b-9710-c78e6bb0e0ea/start 200 0s
+2026/03/26 22:31:32 [f6820835-8829-4ba7-bed4-4447026f0b50] GET /api/v1/sandboxes/045d1f03-fe32-433b-9710-c78e6bb0e0ea/ws 200 0s
+--- PASS: TestWebSocketReceivesEvents (0.00s)
+=== RUN   TestAuthMissingToken
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [0ae50b57-c66e-4197-a9c4-9a7b603c5ca5] GET /api/v1/sandboxes 401 0s
+--- PASS: TestAuthMissingToken (0.00s)
+=== RUN   TestAuthInvalidToken
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [28020f9e-a65e-4659-a2d5-3580ab2ca619] GET /api/v1/sandboxes 401 0s
+--- PASS: TestAuthInvalidToken (0.00s)
+=== RUN   TestAuthExpiredToken
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [e7e12ad6-a3a2-47fa-a80a-62af5b8c2bf5] GET /api/v1/sandboxes 401 0s
+--- PASS: TestAuthExpiredToken (0.00s)
+=== RUN   TestAuthValidToken
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [60506643-8706-4be6-8010-4fdd0bf09f30] GET /api/v1/sandboxes 200 0s
+--- PASS: TestAuthValidToken (0.00s)
+=== RUN   TestAuthHealthBypass
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [f3365952-fbf4-42bc-a73f-84fb09ccea19] GET /api/v1/health 200 0s
+--- PASS: TestAuthHealthBypass (0.00s)
+=== RUN   TestAuthDisabled
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [0353fa8f-64c1-4ba4-85c7-0a3e22fb1fda] GET /api/v1/sandboxes 200 0s
+--- PASS: TestAuthDisabled (0.00s)
+=== RUN   TestAuthWrongSecret
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [70b4e1e0-a038-4d1a-823d-6b7eac84326e] GET /api/v1/sandboxes 401 0s
+--- PASS: TestAuthWrongSecret (0.00s)
+=== RUN   TestDashboardStatsEmpty
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [3c3be8be-644e-423f-a30d-ba93286385e2] GET /api/v1/dashboard/stats 200 0s
+--- PASS: TestDashboardStatsEmpty (0.00s)
+=== RUN   TestDashboardStatsActiveSandboxes
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [2d955fe1-6881-474a-ab83-a0fb0bb6c107] POST /api/v1/sandboxes 201 11.4µs
+2026/03/26 22:31:32 [c0ef9641-d2dc-43a5-a1d1-5b8a6716ff50] POST /api/v1/sandboxes/580843fb-2134-4dbc-9f77-35634f2078e9/start 200 0s
+2026/03/26 22:31:32 [c3ce61bd-a6d4-41f4-a647-7b8228bd0ebd] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [a6d20f51-7e5f-4b1c-9318-dd711c7a7b32] POST /api/v1/sandboxes/3bd02467-5444-42c4-a41b-e1918a1f5183/start 200 0s
+2026/03/26 22:31:32 [e20d2ca2-1d68-43f8-a9b5-3c2c6b72ee73] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [faa70df9-d376-4a96-bf52-3e30425b25e8] GET /api/v1/dashboard/stats 200 0s
+--- PASS: TestDashboardStatsActiveSandboxes (0.00s)
+=== RUN   TestDashboardStatsCountsActions
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [0ec98dfc-9e27-4ca2-ab83-e72393b18ef5] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [826f7582-b230-41c5-9d01-bc3275a6b309] POST /api/v1/sandboxes/676ecb54-3c6b-4e36-a64d-2762940a3c0c/start 200 0s
+2026/03/26 22:31:32 [bf4b72bb-6a1d-48df-966b-33e6bb5671ea] POST /api/v1/sandboxes/676ecb54-3c6b-4e36-a64d-2762940a3c0c/exec 200 522µs
+2026/03/26 22:31:32 [777fbdfb-a030-4048-afb1-65a077f4c1d0] GET /api/v1/dashboard/stats 200 0s
+--- PASS: TestDashboardStatsCountsActions (0.00s)
+=== RUN   TestDashboardActivityEmpty
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [519c41f2-939c-4b88-bfde-6b630f561f51] GET /api/v1/dashboard/activity 200 0s
+--- PASS: TestDashboardActivityEmpty (0.00s)
+=== RUN   TestDashboardActivityReturnsEvents
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [5a7dea91-f7c3-4ae4-b6d3-80ab2a61ea7d] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [6bbe41b4-c0dc-4688-871e-99821c0037f9] POST /api/v1/sandboxes/88245d3a-896f-48cc-9e89-d09205eff541/start 200 0s
+2026/03/26 22:31:32 [c86145c3-55a0-44ca-a992-3be22ee5836a] GET /api/v1/dashboard/activity 200 0s
+--- PASS: TestDashboardActivityReturnsEvents (0.00s)
+=== RUN   TestDashboardActivityLimit
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:31:32 [f0a395d2-429d-4620-95ca-8edd02952572] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [1508187c-0640-4d39-8f6f-87376a05d54d] POST /api/v1/sandboxes/6a9b5526-a657-475d-8bb5-c36d53c0cf6a/start 200 0s
+2026/03/26 22:31:32 [7c66ec58-d63f-4e5e-9782-ad2eb3224156] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [f0afe522-20dc-4dd1-94e4-1923bb33e103] POST /api/v1/sandboxes/1df11945-b5f8-4100-81cd-7b045ae5a161/start 200 503.3µs
+2026/03/26 22:31:32 [971a6149-74eb-4987-8930-0d49fb481e1f] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [49598c4d-5eb5-47dd-b638-8dc6ce89fda0] POST /api/v1/sandboxes/d1d690ae-45f9-4a2a-8a87-3d3052a31035/start 200 0s
+2026/03/26 22:31:32 [4ee0172f-aeeb-4078-81cf-a709214ffab2] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [e8636aa8-d50c-4877-b2a8-17d9c25ccbea] POST /api/v1/sandboxes/43ece345-31a4-4b36-aa5a-9ca2ca2e8cdc/start 200 0s
+2026/03/26 22:31:32 [4c6953eb-723e-45f7-9922-c6d8cf1d697e] POST /api/v1/sandboxes 201 503.2µs
+2026/03/26 22:31:32 [33c823bb-f6c3-440e-b18a-84149679a028] POST /api/v1/sandboxes/1cbfae7e-c244-4c55-a50e-95be21731ea4/start 200 0s
+2026/03/26 22:31:32 [51b67903-71c4-4e20-aa51-28b6cdf880b9] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [17537d41-8990-4349-a503-3126601843c0] POST /api/v1/sandboxes/5665a12f-de8e-4ef0-a4e4-cd625856575d/start 200 0s
+2026/03/26 22:31:32 [501ed1ba-e1ac-4b31-814e-4ad3993bc91f] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [c8dd7ed3-0930-445d-b6ce-02f64602cf82] POST /api/v1/sandboxes/630b7612-173d-4bba-a82d-bf19ffad7364/start 200 504.9µs
+2026/03/26 22:31:32 [1ee96cb1-5c1c-42d8-9a50-c12d54c11962] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [b8fe717e-f4d8-459a-b825-030a77427955] POST /api/v1/sandboxes/9484700a-33b8-48a4-ad53-9386c14d8a5d/start 200 0s
+2026/03/26 22:31:32 [42fbd41f-1864-4ebe-bcbd-46ffbe83b84c] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [7b80b399-2cd3-4dfa-8848-41658b5ba78d] POST /api/v1/sandboxes/a6dfdea3-5314-4cf8-94a8-e7a60781b8ff/start 200 529.3µs
+2026/03/26 22:31:32 [c9a0e5c7-0e3d-4c73-8570-d858c28d56b2] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [d7a61c06-67b9-4b45-a63b-dac0c4f33f01] POST /api/v1/sandboxes/965ee129-2bf7-4c07-8eae-11f27e4e80b6/start 200 0s
+2026/03/26 22:31:32 [55a1ae15-bddb-4daa-9e8d-48602f5988fe] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [e160a57f-9da3-4230-a2a9-0c3123a8abd3] POST /api/v1/sandboxes/2be5dadb-322d-44ff-932e-7c7a68e833c8/start 200 532.2µs
+2026/03/26 22:31:32 [a1e1cf96-e472-4c98-b4fd-86b1b94ea997] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [eb7a6631-11e2-44c4-9935-0eca813c39a8] POST /api/v1/sandboxes/b6b9cdb0-8e9e-405d-8018-331286fca3aa/start 200 0s
+2026/03/26 22:31:32 [5c2b296e-b09a-4b48-b92b-284cf67de885] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [a8647a22-37cc-494e-bf23-26647f93edcb] POST /api/v1/sandboxes/c8086c05-dadf-42c4-a2fc-d97be451763b/start 200 519.3µs
+2026/03/26 22:31:32 [27aac92e-ee5e-4f2c-bf06-060ef5c8ebaa] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [3094ce34-99ef-49ca-afff-e37b297d6c08] POST /api/v1/sandboxes/9746a208-03f4-41af-aaf9-a74b551bc019/start 200 0s
+2026/03/26 22:31:32 [1100692d-6f18-4c30-8724-efb8fd7b1d96] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [3cc48063-35cd-4422-b0d1-6bf7f4813fde] POST /api/v1/sandboxes/86cd57ac-73e1-4dd9-bf50-6b6ad927d87e/start 200 0s
+2026/03/26 22:31:32 [0621dd82-66c3-4322-bb8b-c2245bac1124] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [4695885f-4960-4535-90bc-6c5c62bb3725] POST /api/v1/sandboxes/bfb60252-72f8-4763-ba91-4d47faea02ec/start 200 575.1µs
+2026/03/26 22:31:32 [7d79d71b-051b-46f7-9b1a-183bb70f2cd6] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [666e989d-2f46-4199-bee6-15fb6cd9326d] POST /api/v1/sandboxes/3308e672-d823-4e4c-9275-f1ce363c6057/start 200 0s
+2026/03/26 22:31:32 [d55f493e-aeb2-4f6a-8087-7cd4de981b3f] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [169581bd-6575-425f-a9ed-fc91516ff573] POST /api/v1/sandboxes/7526165b-d1a7-4fc0-b31c-13d4b1ec063d/start 200 516.3µs
+2026/03/26 22:31:32 [4c84b7e8-9e33-438c-9719-f7889365034a] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [348e2e9b-f8e3-4109-94d0-6bdddcce5a16] POST /api/v1/sandboxes/b0ec2347-923d-47ed-a976-a1366d31d115/start 200 0s
+2026/03/26 22:31:32 [e8de04b0-d1b9-407a-97a1-8d16a6afb96a] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [b44fba1d-af3e-48ce-81ca-027361e8603b] POST /api/v1/sandboxes/e263f622-4b57-49c6-b260-adb3269964cf/start 200 524.8µs
+2026/03/26 22:31:32 [9c26f2d8-8532-4ac7-834f-583da5a56e37] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [71be71c7-838e-4b22-8b8b-bf59e7649658] POST /api/v1/sandboxes/e7963190-5099-4408-a3cd-547e68101096/start 200 0s
+2026/03/26 22:31:32 [529b7f3c-c517-413f-98ef-2d18f08e82de] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [8ceb4d0b-6805-42ce-9129-b4c04f85a9be] POST /api/v1/sandboxes/05e93a5d-0fb1-4dbc-b22d-50a1dd08e2cd/start 200 0s
+2026/03/26 22:31:32 [1d386ef5-ceb2-4744-960c-940b178845c7] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [789aed64-7088-4d06-b2e8-5eabd30f0633] POST /api/v1/sandboxes/6f241adb-82a1-46f3-b2f7-f62a6a0abdaa/start 200 521.1µs
+2026/03/26 22:31:32 [1b2aeb09-72d9-4dca-b110-17ef0aa39706] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [6ea2c58d-b8ad-494e-b5a0-cb0463e11878] POST /api/v1/sandboxes/48292fbf-1f56-448b-ab28-207e83be0c55/start 200 0s
+2026/03/26 22:31:32 [e737b1b6-e9dc-44d8-97a0-4bd5e2a86c8f] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [e9815542-496d-4e4d-8dcf-aa3eea34a1a1] POST /api/v1/sandboxes/1896af06-7c8a-4c61-84f8-431e77dbb1dd/start 200 22.8µs
+2026/03/26 22:31:32 [773fd680-f78a-4c27-b738-f9915b2e9114] GET /api/v1/dashboard/activity 200 0s
+--- PASS: TestDashboardActivityLimit (0.01s)
+=== RUN   TestRateLimiterAllowsWithinLimit
+--- PASS: TestRateLimiterAllowsWithinLimit (0.00s)
+=== RUN   TestRateLimiterReturns429WhenExceeded
+--- PASS: TestRateLimiterReturns429WhenExceeded (0.00s)
+=== RUN   TestRateLimiterPerIP
+--- PASS: TestRateLimiterPerIP (0.00s)
+=== RUN   TestRateLimiterResponseBody
+--- PASS: TestRateLimiterResponseBody (0.00s)
+=== RUN   TestNewRateLimiterMiddleware
+--- PASS: TestNewRateLimiterMiddleware (0.00s)
+=== RUN   TestRateLimiterStoreCleanup
+--- PASS: TestRateLimiterStoreCleanup (0.00s)
+=== RUN   TestServerConfigRateLimitDisabled
+2026/03/26 22:31:32 [e4f408e2-cef3-4b1e-8a72-e85389f57f57] GET /api/v1/health 200 0s
+--- PASS: TestServerConfigRateLimitDisabled (0.00s)
+=== RUN   TestServerConfigRateLimitEnabled
+2026/03/26 22:31:32 [5b1637a7-3485-45d9-938b-6e0e488a79a2] GET /api/v1/health 200 0s
+--- PASS: TestServerConfigRateLimitEnabled (0.00s)
+=== RUN   TestAdminHasAllPermissions
+--- PASS: TestAdminHasAllPermissions (0.00s)
+=== RUN   TestOperatorPermissions
+--- PASS: TestOperatorPermissions (0.00s)
+=== RUN   TestViewerPermissions
+--- PASS: TestViewerPermissions (0.00s)
+=== RUN   TestUnknownRoleHasNoPermissions
+--- PASS: TestUnknownRoleHasNoPermissions (0.00s)
+=== RUN   TestValidRole
+--- PASS: TestValidRole (0.00s)
+=== RUN   TestGetUserRoleFromContext
+=== RUN   TestGetUserRoleFromContext/admin
+=== RUN   TestGetUserRoleFromContext/operator
+=== RUN   TestGetUserRoleFromContext/viewer
+=== RUN   TestGetUserRoleFromContext/missing_defaults_to_viewer
+=== RUN   TestGetUserRoleFromContext/invalid_defaults_to_viewer
+=== RUN   TestGetUserRoleFromContext/wrong_type_defaults_to_viewer
+--- PASS: TestGetUserRoleFromContext (0.00s)
+    --- PASS: TestGetUserRoleFromContext/admin (0.00s)
+    --- PASS: TestGetUserRoleFromContext/operator (0.00s)
+    --- PASS: TestGetUserRoleFromContext/viewer (0.00s)
+    --- PASS: TestGetUserRoleFromContext/missing_defaults_to_viewer (0.00s)
+    --- PASS: TestGetUserRoleFromContext/invalid_defaults_to_viewer (0.00s)
+    --- PASS: TestGetUserRoleFromContext/wrong_type_defaults_to_viewer (0.00s)
+=== RUN   TestViewerCannotCreateSandbox
+2026/03/26 22:31:32 [89fc8fa4-63a4-4dce-8ff2-42d717bcde93] POST /api/v1/sandboxes 403 0s
+--- PASS: TestViewerCannotCreateSandbox (0.00s)
+=== RUN   TestViewerCanListSandboxes
+2026/03/26 22:31:32 [78638a37-a260-477b-b1bf-6dd272fbca5d] GET /api/v1/sandboxes 200 0s
+--- PASS: TestViewerCanListSandboxes (0.00s)
+=== RUN   TestViewerCannotAccessAudit
+2026/03/26 22:31:32 [2df60611-7c3f-4466-8c0c-b31b1f99d4de] GET /api/v1/audit 403 0s
+--- PASS: TestViewerCannotAccessAudit (0.00s)
+=== RUN   TestOperatorCanCreateSandbox
+2026/03/26 22:31:32 [a86f5e6f-9bd3-45c0-b5b0-6b5f85b8fae6] POST /api/v1/sandboxes 400 0s
+--- PASS: TestOperatorCanCreateSandbox (0.00s)
+=== RUN   TestOperatorCannotAccessAudit
+2026/03/26 22:31:32 [01ae8ab4-99d0-4366-a172-860ac4ed176c] GET /api/v1/audit 403 0s
+--- PASS: TestOperatorCannotAccessAudit (0.00s)
+=== RUN   TestOperatorCannotManageUsers
+2026/03/26 22:31:32 [9c3091e7-9fe0-401e-b40b-b629122e9ffe] POST /api/v1/auth/token 403 0s
+--- PASS: TestOperatorCannotManageUsers (0.00s)
+=== RUN   TestAdminCanAccessAudit
+2026/03/26 22:31:32 [88267512-0d8a-4829-9099-d2b19ebfeae3] GET /api/v1/audit 503 0s
+--- PASS: TestAdminCanAccessAudit (0.00s)
+=== RUN   TestAdminCanGenerateTokens
+2026/03/26 22:31:32 [80585ce1-93b7-43a5-a418-554b93e114e2] POST /api/v1/auth/token 400 0s
+--- PASS: TestAdminCanGenerateTokens (0.00s)
+=== RUN   TestDevModeSkipsPermissionCheck
+2026/03/26 22:31:32 [d3a865e5-b4f2-4e31-a0a8-9a33a567d961] POST /api/v1/sandboxes 201 0s
+--- PASS: TestDevModeSkipsPermissionCheck (0.00s)
+=== RUN   TestHealthBypassesAuth
+2026/03/26 22:31:32 [23752fcc-fcdd-42e2-a5a0-5e63f531c0c1] GET /api/v1/health 200 0s
+--- PASS: TestHealthBypassesAuth (0.00s)
+=== RUN   TestValidateCreateSandbox_ValidName
+=== RUN   TestValidateCreateSandbox_ValidName/simple
+=== RUN   TestValidateCreateSandbox_ValidName/with-underscore
+=== RUN   TestValidateCreateSandbox_ValidName/empty-name
+=== RUN   TestValidateCreateSandbox_ValidName/single-char
+--- PASS: TestValidateCreateSandbox_ValidName (0.00s)
+    --- PASS: TestValidateCreateSandbox_ValidName/simple (0.00s)
+    --- PASS: TestValidateCreateSandbox_ValidName/with-underscore (0.00s)
+    --- PASS: TestValidateCreateSandbox_ValidName/empty-name (0.00s)
+    --- PASS: TestValidateCreateSandbox_ValidName/single-char (0.00s)
+=== RUN   TestValidateCreateSandbox_InvalidName
+=== RUN   TestValidateCreateSandbox_InvalidName/too-long
+=== RUN   TestValidateCreateSandbox_InvalidName/special-chars
+=== RUN   TestValidateCreateSandbox_InvalidName/starts-with-dash
+--- PASS: TestValidateCreateSandbox_InvalidName (0.00s)
+    --- PASS: TestValidateCreateSandbox_InvalidName/too-long (0.00s)
+    --- PASS: TestValidateCreateSandbox_InvalidName/special-chars (0.00s)
+    --- PASS: TestValidateCreateSandbox_InvalidName/starts-with-dash (0.00s)
+=== RUN   TestValidateCreateSandbox_PolicyFileNotExists
+--- PASS: TestValidateCreateSandbox_PolicyFileNotExists (0.00s)
+=== RUN   TestValidateCreateSandbox_MaxLengthName
+--- PASS: TestValidateCreateSandbox_MaxLengthName (0.00s)
+=== RUN   TestValidateExecAction_Valid
+=== RUN   TestValidateExecAction_Valid/file-write-colon
+=== RUN   TestValidateExecAction_Valid/file-write-dot
+=== RUN   TestValidateExecAction_Valid/shell-exec
+--- PASS: TestValidateExecAction_Valid (0.00s)
+    --- PASS: TestValidateExecAction_Valid/file-write-colon (0.00s)
+    --- PASS: TestValidateExecAction_Valid/file-write-dot (0.00s)
+    --- PASS: TestValidateExecAction_Valid/shell-exec (0.00s)
+=== RUN   TestValidateExecAction_MissingType
+--- PASS: TestValidateExecAction_MissingType (0.00s)
+=== RUN   TestValidateExecAction_UnknownType
+--- PASS: TestValidateExecAction_UnknownType (0.00s)
+=== RUN   TestValidateExecAction_EmptyParams
+--- PASS: TestValidateExecAction_EmptyParams (0.00s)
+=== RUN   TestValidateExecAction_NullByteInParams
+--- PASS: TestValidateExecAction_NullByteInParams (0.00s)
+=== RUN   TestValidateExecAction_MultipleErrors
+--- PASS: TestValidateExecAction_MultipleErrors (0.00s)
+=== RUN   TestValidatePolicy_Valid
+--- PASS: TestValidatePolicy_Valid (0.00s)
+=== RUN   TestValidatePolicy_DuplicateRuleIDs
+--- PASS: TestValidatePolicy_DuplicateRuleIDs (0.00s)
+=== RUN   TestValidatePolicy_InvalidEffect
+--- PASS: TestValidatePolicy_InvalidEffect (0.00s)
+=== RUN   TestValidatePolicy_InvalidRuleEffect
+--- PASS: TestValidatePolicy_InvalidRuleEffect (0.00s)
+=== RUN   TestValidatePolicy_EmptyActionPattern
+--- PASS: TestValidatePolicy_EmptyActionPattern (0.00s)
+=== RUN   TestValidatePolicy_EmptyRules
+--- PASS: TestValidatePolicy_EmptyRules (0.00s)
+=== RUN   TestCreateSandboxValidationError
+2026/03/26 22:31:32 [6e4c99d3-53d7-4c42-aec1-867970c8f4a9] POST /api/v1/sandboxes 400 503.7µs
+--- PASS: TestCreateSandboxValidationError (0.00s)
+=== RUN   TestExecActionValidationError
+2026/03/26 22:31:32 [e021923f-a62f-461a-ac79-94e11db26985] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:31:32 [da42cc19-10f7-4c64-bf7e-b3f4a90c5dfd] POST /api/v1/sandboxes/fe89081a-fc6b-4d9f-a0be-b4fb88f935c3/start 200 524.4µs
+2026/03/26 22:31:32 [c9b79a7e-762b-4945-b0f6-197be1980715] POST /api/v1/sandboxes/fe89081a-fc6b-4d9f-a0be-b4fb88f935c3/exec 400 0s
+--- PASS: TestExecActionValidationError (0.00s)
+PASS
+coverage: 78.4% of statements
+ok  	github.com/LURENYUANSHI/agent-sandbox/pkg/api	0.432s	coverage: 78.4% of statements
+=== RUN   TestDefault
+--- PASS: TestDefault (0.00s)
+=== RUN   TestLoadFromEnv_Defaults
+--- PASS: TestLoadFromEnv_Defaults (0.00s)
+=== RUN   TestLoadFromEnv_Overrides
+--- PASS: TestLoadFromEnv_Overrides (0.00s)
+=== RUN   TestLoadFromEnv_InvalidValues
+--- PASS: TestLoadFromEnv_InvalidValues (0.00s)
+=== RUN   TestLoadFromFile
+--- PASS: TestLoadFromFile (0.00s)
+=== RUN   TestLoadFromFile_NotFound
+--- PASS: TestLoadFromFile_NotFound (0.00s)
+=== RUN   TestLoadFromFile_InvalidYAML
+--- PASS: TestLoadFromFile_InvalidYAML (0.00s)
+PASS
+coverage: 85.7% of statements
+ok  	github.com/LURENYUANSHI/agent-sandbox/pkg/config	0.195s	coverage: 85.7% of statements
+=== RUN   TestFilesystem_ReadWriteDelete
+--- PASS: TestFilesystem_ReadWriteDelete (0.00s)
+=== RUN   TestFilesystem_PathEscape
+--- PASS: TestFilesystem_PathEscape (0.00s)
+=== RUN   TestFilesystem_NestedDirectories
+--- PASS: TestFilesystem_NestedDirectories (0.00s)
+=== RUN   TestFilesystem_DeleteSandboxRoot
+--- PASS: TestFilesystem_DeleteSandboxRoot (0.00s)
+=== RUN   TestFilesystem_MissingParams
+--- PASS: TestFilesystem_MissingParams (0.00s)
+=== RUN   TestProcess_SimpleCommand
+--- PASS: TestProcess_SimpleCommand (0.01s)
+=== RUN   TestProcess_Timeout
+--- PASS: TestProcess_Timeout (2.03s)
+=== RUN   TestProcess_Shell
+--- PASS: TestProcess_Shell (0.01s)
+=== RUN   TestNetwork_DisabledRejects
+--- PASS: TestNetwork_DisabledRejects (0.00s)
+=== RUN   TestNetwork_MissingParams
+--- PASS: TestNetwork_MissingParams (0.00s)
+=== RUN   TestExecutor_Dispatch
+--- PASS: TestExecutor_Dispatch (0.00s)
+=== RUN   TestExecutor_UnsupportedType
+--- PASS: TestExecutor_UnsupportedType (0.00s)
+=== RUN   TestExecutor_DispatchDelete
+--- PASS: TestExecutor_DispatchDelete (0.00s)
+=== RUN   TestExecutor_DispatchProcess
+--- PASS: TestExecutor_DispatchProcess (0.01s)
+=== RUN   TestExecutor_DispatchShell
+--- PASS: TestExecutor_DispatchShell (0.01s)
+=== RUN   TestNetwork_HTTPEnabled
+--- PASS: TestNetwork_HTTPEnabled (0.00s)
+=== RUN   TestNetwork_HTTPWithMethod
+--- PASS: TestNetwork_HTTPWithMethod (0.00s)
+=== RUN   TestNetwork_ConnectEnabled
+--- PASS: TestNetwork_ConnectEnabled (0.00s)
+=== RUN   TestNetwork_ConnectFailure
+--- PASS: TestNetwork_ConnectFailure (0.00s)
+=== RUN   TestProcess_NonZeroExit
+--- PASS: TestProcess_NonZeroExit (0.01s)
+=== RUN   TestProcess_MissingCommand
+--- PASS: TestProcess_MissingCommand (0.00s)
+=== RUN   TestProcess_ShellMissingCommand
+--- PASS: TestProcess_ShellMissingCommand (0.00s)
+=== RUN   TestFilesystem_WriteOversize
+--- PASS: TestFilesystem_WriteOversize (0.00s)
+=== RUN   TestFilesystem_AbsolutePath
+--- PASS: TestFilesystem_AbsolutePath (0.00s)
+=== RUN   TestProcess_StderrOutput
+--- PASS: TestProcess_StderrOutput (0.01s)
+PASS
+coverage: 81.7% of statements
+ok  	github.com/LURENYUANSHI/agent-sandbox/pkg/executor	2.782s	coverage: 81.7% of statements
+=== RUN   TestMetricsRegistered
+--- PASS: TestMetricsRegistered (0.00s)
+=== RUN   TestCounterIncrements
+--- PASS: TestCounterIncrements (0.00s)
+=== RUN   TestHistogramRecordsValues
+--- PASS: TestHistogramRecordsValues (0.00s)
+=== RUN   TestGaugeIncrementDecrement
+--- PASS: TestGaugeIncrementDecrement (0.00s)
+PASS
+coverage: 0.0% of statements
+ok  	github.com/LURENYUANSHI/agent-sandbox/pkg/metrics	0.214s	coverage: 0.0% of statements
+=== RUN   TestEngine_DefaultDeny
+--- PASS: TestEngine_DefaultDeny (0.00s)
+=== RUN   TestEngine_AllowRule
+--- PASS: TestEngine_AllowRule (0.00s)
+=== RUN   TestEngine_WildcardMatch
+--- PASS: TestEngine_WildcardMatch (0.00s)
+=== RUN   TestEngine_ConditionMatch
+--- PASS: TestEngine_ConditionMatch (0.00s)
+=== RUN   TestEngine_DefaultAllow
+--- PASS: TestEngine_DefaultAllow (0.00s)
+=== RUN   TestEngine_GlobalWildcard
+--- PASS: TestEngine_GlobalWildcard (0.00s)
+=== RUN   TestEngine_ConditionMissingKey
+--- PASS: TestEngine_ConditionMissingKey (0.00s)
+=== RUN   TestEngine_PriorityOrdering
+--- PASS: TestEngine_PriorityOrdering (0.00s)
+=== RUN   TestEngine_PriorityReverseOrder
+--- PASS: TestEngine_PriorityReverseOrder (0.00s)
+=== RUN   TestEngine_ActionsResourcesMatch
+--- PASS: TestEngine_ActionsResourcesMatch (0.00s)
+=== RUN   TestEngine_ActionsWithoutResources
+--- PASS: TestEngine_ActionsWithoutResources (0.00s)
+=== RUN   TestEngine_EmptyRulesDefaultDeny
+--- PASS: TestEngine_EmptyRulesDefaultDeny (0.00s)
+=== RUN   TestEngine_EmptyRulesDefaultAllow
+--- PASS: TestEngine_EmptyRulesDefaultAllow (0.00s)
+=== RUN   TestEngine_EmptyDefaultEffectFallsToDeny
+--- PASS: TestEngine_EmptyDefaultEffectFallsToDeny (0.00s)
+=== RUN   TestNewPolicyEngine
+--- PASS: TestNewPolicyEngine (0.00s)
+=== RUN   TestNewEngineWithConfig
+--- PASS: TestNewEngineWithConfig (0.00s)
+=== RUN   TestEngine_GetPolicy
+--- PASS: TestEngine_GetPolicy (0.00s)
+=== RUN   TestEngine_ConcurrentEvaluate
+--- PASS: TestEngine_ConcurrentEvaluate (0.00s)
+=== RUN   TestEngine_ConcurrentLoadAndEvaluate
+--- PASS: TestEngine_ConcurrentLoadAndEvaluate (0.00s)
+=== RUN   TestMatchGlob
+--- PASS: TestMatchGlob (0.00s)
+=== RUN   TestMatchActionType
+--- PASS: TestMatchActionType (0.00s)
+=== RUN   TestMatchConditions
+--- PASS: TestMatchConditions (0.00s)
+=== RUN   TestBuiltinRule_NoDeleteRoot
+--- PASS: TestBuiltinRule_NoDeleteRoot (0.00s)
+=== RUN   TestBuiltinRule_NoKillInit
+--- PASS: TestBuiltinRule_NoKillInit (0.00s)
+=== RUN   TestBuiltinRule_NoDangerousCommands
+--- PASS: TestBuiltinRule_NoDangerousCommands (0.00s)
+=== RUN   TestBuiltinRule_NoPrivilegedPorts
+--- PASS: TestBuiltinRule_NoPrivilegedPorts (0.00s)
+=== RUN   TestBuiltinRule_MaxFileSizeLimit
+--- PASS: TestBuiltinRule_MaxFileSizeLimit (0.00s)
+=== RUN   TestBuiltinRule_PathTraversalProtection
+--- PASS: TestBuiltinRule_PathTraversalProtection (0.00s)
+=== RUN   TestDefaultBuiltinRules
+--- PASS: TestDefaultBuiltinRules (0.00s)
+=== RUN   TestBuiltinRulesFromConfig
+--- PASS: TestBuiltinRulesFromConfig (0.00s)
+=== RUN   TestBuiltInRules
+--- PASS: TestBuiltInRules (0.00s)
+=== RUN   TestEngine_BuiltInRulesEnforcement
+--- PASS: TestEngine_BuiltInRulesEnforcement (0.00s)
+=== RUN   TestIsDestructiveRm
+--- PASS: TestIsDestructiveRm (0.00s)
+=== RUN   TestParsePort
+--- PASS: TestParsePort (0.00s)
+=== RUN   TestParse
+--- PASS: TestParse (0.00s)
+=== RUN   TestParse_DefaultEffect
+--- PASS: TestParse_DefaultEffect (0.00s)
+=== RUN   TestParse_InvalidYAML
+--- PASS: TestParse_InvalidYAML (0.00s)
+=== RUN   TestParseFile
+--- PASS: TestParseFile (0.00s)
+=== RUN   TestParseFile_NotFound
+--- PASS: TestParseFile_NotFound (0.00s)
+=== RUN   TestLoadFromBytes_Valid
+--- PASS: TestLoadFromBytes_Valid (0.00s)
+=== RUN   TestLoadFromBytes_InvalidYAML
+--- PASS: TestLoadFromBytes_InvalidYAML (0.00s)
+=== RUN   TestLoadFromBytes_ValidationError_MissingName
+--- PASS: TestLoadFromBytes_ValidationError_MissingName (0.00s)
+=== RUN   TestLoadFromFile_Valid
+--- PASS: TestLoadFromFile_Valid (0.00s)
+=== RUN   TestLoadFromFile_NotFound
+--- PASS: TestLoadFromFile_NotFound (0.00s)
+=== RUN   TestValidate_MissingName
+--- PASS: TestValidate_MissingName (0.00s)
+=== RUN   TestValidate_InvalidDefaultEffect
+--- PASS: TestValidate_InvalidDefaultEffect (0.00s)
+=== RUN   TestValidate_DuplicateRuleIDs
+--- PASS: TestValidate_DuplicateRuleIDs (0.00s)
+=== RUN   TestValidate_MissingRuleID
+--- PASS: TestValidate_MissingRuleID (0.00s)
+=== RUN   TestValidate_InvalidRuleEffect
+--- PASS: TestValidate_InvalidRuleEffect (0.00s)
+=== RUN   TestValidate_NoActions
+--- PASS: TestValidate_NoActions (0.00s)
+=== RUN   TestValidate_ValidPolicy
+--- PASS: TestValidate_ValidPolicy (0.00s)
+=== RUN   TestValidate_EmptyRules
+--- PASS: TestValidate_EmptyRules (0.00s)
+=== RUN   TestMetadataInt64
+--- PASS: TestMetadataInt64 (0.00s)
+=== RUN   TestMatchesRule
+--- PASS: TestMatchesRule (0.00s)
+PASS
+coverage: 99.1% of statements
+ok  	github.com/LURENYUANSHI/agent-sandbox/pkg/policy	0.186s	coverage: 99.1% of statements
+=== RUN   TestCheckDiskUsage
+--- PASS: TestCheckDiskUsage (0.00s)
+=== RUN   TestCheckDiskUsage_NonexistentDir
+--- PASS: TestCheckDiskUsage_NonexistentDir (0.00s)
+=== RUN   TestCheckProcessCount
+--- PASS: TestCheckProcessCount (0.00s)
+=== RUN   TestEnforceLimit_DiskUsage
+--- PASS: TestEnforceLimit_DiskUsage (0.00s)
+=== RUN   TestEnforceLimit_ProcessCount
+--- PASS: TestEnforceLimit_ProcessCount (0.00s)
+=== RUN   TestEnforceLimit_UnrelatedAction
+--- PASS: TestEnforceLimit_UnrelatedAction (0.00s)
+=== RUN   TestEnforceLimit_DotSeparatedActionTypes
+--- PASS: TestEnforceLimit_DotSeparatedActionTypes (0.00s)
+=== RUN   TestDefaultConfig
+--- PASS: TestDefaultConfig (0.00s)
+=== RUN   TestConfig_Validate
+=== RUN   TestConfig_Validate/valid_config
+=== RUN   TestConfig_Validate/missing_root_dir
+=== RUN   TestConfig_Validate/zero_memory
+=== RUN   TestConfig_Validate/cpu_over_100
+=== RUN   TestConfig_Validate/zero_timeout
+=== RUN   TestConfig_Validate/trace_enabled_without_path
+--- PASS: TestConfig_Validate (0.00s)
+    --- PASS: TestConfig_Validate/valid_config (0.00s)
+    --- PASS: TestConfig_Validate/missing_root_dir (0.00s)
+    --- PASS: TestConfig_Validate/zero_memory (0.00s)
+    --- PASS: TestConfig_Validate/cpu_over_100 (0.00s)
+    --- PASS: TestConfig_Validate/zero_timeout (0.00s)
+    --- PASS: TestConfig_Validate/trace_enabled_without_path (0.00s)
+=== RUN   TestSandbox_Lifecycle
+--- PASS: TestSandbox_Lifecycle (0.00s)
+=== RUN   TestSandbox_PolicyDenied
+--- PASS: TestSandbox_PolicyDenied (0.00s)
+=== RUN   TestSandbox_ConcurrentExecution
+--- PASS: TestSandbox_ConcurrentExecution (0.01s)
+=== RUN   TestSandbox_ExecuteWhenNotRunning
+--- PASS: TestSandbox_ExecuteWhenNotRunning (0.00s)
+=== RUN   TestNewSandbox_NilDeps
+--- PASS: TestNewSandbox_NilDeps (0.00s)
+PASS
+coverage: 86.8% of statements
+ok  	github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox	0.160s	coverage: 86.8% of statements
+=== RUN   TestAuditLogger_LogAndQuery
+--- PASS: TestAuditLogger_LogAndQuery (0.06s)
+=== RUN   TestAuditLogger_QueryByTimeRange
+--- PASS: TestAuditLogger_QueryByTimeRange (0.04s)
+=== RUN   TestAuditLogger_EntryFields
+--- PASS: TestAuditLogger_EntryFields (0.04s)
+=== RUN   TestAuditLogger_RotateDeletesOldEntries
+--- PASS: TestAuditLogger_RotateDeletesOldEntries (0.05s)
+=== RUN   TestAuditLogger_RotateKeepsRecentEntries
+--- PASS: TestAuditLogger_RotateKeepsRecentEntries (0.05s)
+=== RUN   TestAuditLogger_GetStats
+--- PASS: TestAuditLogger_GetStats (0.05s)
+=== RUN   TestAuditLogger_AutoRotation
+--- PASS: TestAuditLogger_AutoRotation (0.13s)
+=== RUN   TestAuditLogger_CombinedFilters
+--- PASS: TestAuditLogger_CombinedFilters (0.05s)
+=== RUN   TestRecorder_InMemory
+--- PASS: TestRecorder_InMemory (0.00s)
+=== RUN   TestRecorder_WithStore
+--- PASS: TestRecorder_WithStore (0.03s)
+=== RUN   TestRecorder_AutoFillsIDAndTimestamp
+--- PASS: TestRecorder_AutoFillsIDAndTimestamp (0.00s)
+=== RUN   TestRecorder_ConcurrentRecording
+--- PASS: TestRecorder_ConcurrentRecording (0.00s)
+=== RUN   TestRecorder_CloseWithoutStore
+--- PASS: TestRecorder_CloseWithoutStore (0.00s)
+=== RUN   TestRecorder_GetEventsEmpty
+--- PASS: TestRecorder_GetEventsEmpty (0.00s)
+=== RUN   TestStore_InMemory
+--- PASS: TestStore_InMemory (0.00s)
+=== RUN   TestStore_EmptyLoad
+--- PASS: TestStore_EmptyLoad (0.00s)
+=== RUN   TestStore_ManyEvents
+--- PASS: TestStore_ManyEvents (0.00s)
+=== RUN   TestStore_MultipleSandboxes
+--- PASS: TestStore_MultipleSandboxes (0.00s)
+=== RUN   TestStore_SaveUpsert
+--- PASS: TestStore_SaveUpsert (0.00s)
+=== RUN   TestStore_NilData
+--- PASS: TestStore_NilData (0.00s)
+=== RUN   TestReplayer_LoadTrace
+--- PASS: TestReplayer_LoadTrace (0.00s)
+=== RUN   TestReplayer_LoadTrace_Empty
+--- PASS: TestReplayer_LoadTrace_Empty (0.00s)
+=== RUN   TestStep_ThroughAllEvents
+--- PASS: TestStep_ThroughAllEvents (0.00s)
+=== RUN   TestRewind
+--- PASS: TestRewind (0.00s)
+=== RUN   TestStep_EmptyTrace
+--- PASS: TestStep_EmptyTrace (0.00s)
+=== RUN   TestReplayer_GetTimeline
+--- PASS: TestReplayer_GetTimeline (0.00s)
+=== RUN   TestReplayer_GetTimeline_Empty
+--- PASS: TestReplayer_GetTimeline_Empty (0.00s)
+=== RUN   TestBuildSpanTree_FlatEvents
+--- PASS: TestBuildSpanTree_FlatEvents (0.00s)
+=== RUN   TestBuildSpanTree_ParentChild
+--- PASS: TestBuildSpanTree_ParentChild (0.00s)
+=== RUN   TestBuildSpanTree_DeepNesting
+--- PASS: TestBuildSpanTree_DeepNesting (0.00s)
+=== RUN   TestBuildSpanTree_OrphanBecomesRoot
+--- PASS: TestBuildSpanTree_OrphanBecomesRoot (0.00s)
+=== RUN   TestBuildSpanTree_Empty
+--- PASS: TestBuildSpanTree_Empty (0.00s)
+=== RUN   TestExportToOTLP_BasicStructure
+--- PASS: TestExportToOTLP_BasicStructure (0.00s)
+=== RUN   TestExportToOTLP_ErrorStatus
+--- PASS: TestExportToOTLP_ErrorStatus (0.00s)
+=== RUN   TestExportToOTLP_NoResult
+--- PASS: TestExportToOTLP_NoResult (0.00s)
+=== RUN   TestExportToOTLP_ParentSpan
+--- PASS: TestExportToOTLP_ParentSpan (0.00s)
+=== RUN   TestExportToOTLP_PolicyDecisionAttributes
+--- PASS: TestExportToOTLP_PolicyDecisionAttributes (0.00s)
+=== RUN   TestExportToOTLP_Empty
+--- PASS: TestExportToOTLP_Empty (0.00s)
+=== RUN   TestExportToOTLP_ShortSandboxID
+--- PASS: TestExportToOTLP_ShortSandboxID (0.00s)
+=== RUN   TestExportToOTLP_SpanNameWithAction
+--- PASS: TestExportToOTLP_SpanNameWithAction (0.00s)
+=== RUN   TestExportToOTLP_SpanNameWithoutAction
+--- PASS: TestExportToOTLP_SpanNameWithoutAction (0.00s)
+PASS
+coverage: 88.5% of statements
+ok  	github.com/LURENYUANSHI/agent-sandbox/pkg/trace	0.689s	coverage: 88.5% of statements
+?   	github.com/LURENYUANSHI/agent-sandbox/pkg/types	[no test files]
+=== RUN   TestAPIFullWorkflow
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:32:22 [fdbc899d-2f52-42bd-ab14-23d228eaa9e2] POST /api/v1/sandboxes 201 517µs
+2026/03/26 22:32:22 [437a0db2-f017-4040-bcb2-ac886018f7cf] POST /api/v1/sandboxes/5887915e-6a8d-4423-9e26-9d01b7896640/start 200 520.7µs
+2026/03/26 22:32:22 [1ca62220-6a19-4bc3-be14-9de1d6016651] POST /api/v1/sandboxes/5887915e-6a8d-4423-9e26-9d01b7896640/exec 403 0s
+2026/03/26 22:32:22 [b5f12fcb-9965-4715-b3e7-3f0d0b5659f1] GET /api/v1/sandboxes/5887915e-6a8d-4423-9e26-9d01b7896640/traces 200 0s
+2026/03/26 22:32:22 [dd4e2c79-504c-4985-b5fc-fd5a4f8ccdbc] POST /api/v1/sandboxes/5887915e-6a8d-4423-9e26-9d01b7896640/stop 200 0s
+2026/03/26 22:32:22 [bea34501-1228-443f-80f2-ce896b3addab] DELETE /api/v1/sandboxes/5887915e-6a8d-4423-9e26-9d01b7896640 200 0s
+2026/03/26 22:32:22 [36fc488b-edaa-4439-82d2-a838019df46c] GET /api/v1/sandboxes/5887915e-6a8d-4423-9e26-9d01b7896640 404 0s
+--- PASS: TestAPIFullWorkflow (0.01s)
+=== RUN   TestAPIPolicyValidation
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:32:22 [5ffb2b80-6587-4978-a179-903950389b4d] POST /api/v1/policies/validate 200 522.2µs
+2026/03/26 22:32:22 [4450e7ea-c6b2-44fd-aad8-55500120744a] POST /api/v1/policies/validate 200 0s
+--- PASS: TestAPIPolicyValidation (0.00s)
+=== RUN   TestAPIErrorCases
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:32:22 [fade6120-5613-462f-89fe-4f29625af13b] GET /api/v1/sandboxes/nonexistent 404 0s
+2026/03/26 22:32:22 [3a3e8a52-244d-4abf-b3ea-eadb61184784] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:32:22 [c433539c-28da-49c7-8bad-f8ed53dad617] POST /api/v1/sandboxes/da5ab054-3401-4cb3-8cad-408baba28081/exec 403 0s
+2026/03/26 22:32:22 [cbb625cd-3623-4044-927f-2e2b47fd611d] POST /api/v1/sandboxes/da5ab054-3401-4cb3-8cad-408baba28081/stop 409 0s
+--- PASS: TestAPIErrorCases (0.00s)
+=== RUN   TestAPIListMultipleSandboxes
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:32:22 [db8d4192-80a4-4369-8abf-6ae26e079a28] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:32:22 [4e141957-ab03-4f16-b902-521a4dbe82a7] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:32:22 [a4fe5895-1e57-4462-bbb6-35f9986488e1] POST /api/v1/sandboxes 201 0s
+2026/03/26 22:32:22 [8e48b1e2-5b2f-43f8-b50e-842d3cd59e6c] GET /api/v1/sandboxes 200 0s
+--- PASS: TestAPIListMultipleSandboxes (0.00s)
+=== RUN   TestAPIHealth
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /metrics                  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).setupRoutes.WrapH.func6 (7 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (7 handlers)
+[GIN-debug] GET    /api/v1/health            --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleHealth-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/token        --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGenerateToken-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleCreateSandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes         --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleListSandboxes-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/start --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartSandbox-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/exec --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleExecAction-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/stop --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStopSandbox-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/sandboxes/:id     --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleDestroySandbox-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/traces --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetTraces-fm (8 handlers)
+[GIN-debug] POST   /api/v1/sandboxes/:id/replay --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleStartReplay-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/replay/next --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleReplayNext-fm (8 handlers)
+[GIN-debug] POST   /api/v1/policies/validate --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleValidatePolicy-fm (8 handlers)
+[GIN-debug] GET    /api/v1/sandboxes/:id/ws  --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleWebSocket-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/stats   --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard/activity --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetRecentActivity-fm (8 handlers)
+[GIN-debug] GET    /api/v1/audit             --> github.com/LURENYUANSHI/agent-sandbox/pkg/api.(*Server).handleGetAuditLog-fm (8 handlers)
+2026/03/26 22:32:22 [6da0145e-22bd-42ed-ae9f-78af3537b339] GET /api/v1/health 200 0s
+--- PASS: TestAPIHealth (0.00s)
+=== RUN   TestSandboxFullLifecycle
+--- PASS: TestSandboxFullLifecycle (0.00s)
+=== RUN   TestSandboxConcurrentExecution
+--- PASS: TestSandboxConcurrentExecution (0.00s)
+=== RUN   TestSandboxPolicyHotReload
+--- PASS: TestSandboxPolicyHotReload (0.00s)
+=== RUN   TestSandboxPolicyFromYAML
+--- PASS: TestSandboxPolicyFromYAML (0.00s)
+PASS
+coverage: [no statements]
+ok  	github.com/LURENYUANSHI/agent-sandbox/test/integration	20.725s	coverage: [no statements]
+	github.com/LURENYUANSHI/agent-sandbox/web/node_modules/flatted/golang/pkg/flatted		coverage: 0.0% of statements
