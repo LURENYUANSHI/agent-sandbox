@@ -8,11 +8,13 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/api"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/config"
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/trace"
 )
 
 // @title AgentSandbox API
@@ -47,6 +49,7 @@ func main() {
 
 	authEnabled := appCfg.Server.AuthEnabled
 	authSecret := ""
+	auditRetentionDays := 90
 
 	// Parse flags from args
 	for i, arg := range os.Args[1:] {
@@ -56,6 +59,12 @@ func main() {
 		case "--auth-secret":
 			if i+1 < len(os.Args[1:]) {
 				authSecret = os.Args[i+2]
+			}
+		case "--audit-retention-days":
+			if i+1 < len(os.Args[1:]) {
+				if d, err := strconv.Atoi(os.Args[i+2]); err == nil && d > 0 {
+					auditRetentionDays = d
+				}
 			}
 		}
 	}
@@ -81,6 +90,20 @@ func main() {
 
 	srv := api.NewServer(cfg)
 
+	// Initialize audit log rotation
+	var auditLogger *trace.AuditLogger
+	if cfg.AuditDBPath != "" {
+		var err error
+		auditLogger, err = trace.NewAuditLogger(cfg.AuditDBPath)
+		if err != nil {
+			log.Printf("WARNING: failed to initialize audit logger for rotation: %v", err)
+		} else {
+			auditLogger.SetRetentionDays(auditRetentionDays)
+			auditLogger.StartAutoRotation(24 * time.Hour)
+			log.Printf("Audit log rotation enabled: retention=%d days", auditRetentionDays)
+		}
+	}
+
 	// Graceful shutdown on SIGINT/SIGTERM
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -104,6 +127,11 @@ func main() {
 	}
 
 	<-ctx.Done()
+
+	if auditLogger != nil {
+		auditLogger.StopAutoRotation()
+		auditLogger.Close()
+	}
 
 	if err := srv.Shutdown(context.Background()); err != nil {
 		log.Printf("Shutdown error: %v", err)
