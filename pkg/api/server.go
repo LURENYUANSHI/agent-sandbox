@@ -10,9 +10,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	appconfig "github.com/LURENYUANSHI/agent-sandbox/pkg/config"
+	_ "github.com/LURENYUANSHI/agent-sandbox/docs/swagger"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/executor"
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/metrics"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/policy"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/sandbox"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/trace"
@@ -106,6 +111,8 @@ func NewServer(cfg ServerConfig) *Server {
 		}
 	}
 
+	metrics.Init()
+
 	s.router = gin.New()
 	s.setupRoutes()
 
@@ -116,33 +123,37 @@ func (s *Server) setupRoutes() {
 	s.router.Use(Recovery())
 	s.router.Use(RequestID())
 	s.router.Use(Logger())
+	s.router.Use(MetricsMiddleware())
 	s.router.Use(CORS(s.config.CORSOrigins))
 	if s.config.RateLimitRPS > 0 {
 		s.router.Use(NewRateLimiter(s.config.RateLimitRPS, s.config.RateLimitBurst))
 	}
 	s.router.Use(NewAuthMiddleware(s.config.AuthSecret, s.config.AuthEnabled))
 
+	s.router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	s.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	v1 := s.router.Group("/api/v1")
 	{
 		v1.GET("/health", s.handleHealth)
-		v1.POST("/auth/token", s.handleGenerateToken)
+		v1.POST("/auth/token", RequirePermission(PermUserManage), s.handleGenerateToken)
 
-		v1.POST("/sandboxes", s.handleCreateSandbox)
-		v1.GET("/sandboxes", s.handleListSandboxes)
-		v1.GET("/sandboxes/:id", s.handleGetSandbox)
-		v1.POST("/sandboxes/:id/start", s.handleStartSandbox)
-		v1.POST("/sandboxes/:id/exec", s.handleExecAction)
-		v1.POST("/sandboxes/:id/stop", s.handleStopSandbox)
-		v1.DELETE("/sandboxes/:id", s.handleDestroySandbox)
-		v1.GET("/sandboxes/:id/traces", s.handleGetTraces)
-		v1.POST("/sandboxes/:id/replay", s.handleStartReplay)
-		v1.GET("/sandboxes/:id/replay/next", s.handleReplayNext)
-		v1.POST("/policies/validate", s.handleValidatePolicy)
-		v1.GET("/sandboxes/:id/ws", s.handleWebSocket)
+		v1.POST("/sandboxes", RequirePermission(PermSandboxCreate), s.handleCreateSandbox)
+		v1.GET("/sandboxes", RequirePermission(PermTraceView), s.handleListSandboxes)
+		v1.GET("/sandboxes/:id", RequirePermission(PermTraceView), s.handleGetSandbox)
+		v1.POST("/sandboxes/:id/start", RequirePermission(PermSandboxManage), s.handleStartSandbox)
+		v1.POST("/sandboxes/:id/exec", RequirePermission(PermSandboxExec), s.handleExecAction)
+		v1.POST("/sandboxes/:id/stop", RequirePermission(PermSandboxManage), s.handleStopSandbox)
+		v1.DELETE("/sandboxes/:id", RequirePermission(PermSandboxManage), s.handleDestroySandbox)
+		v1.GET("/sandboxes/:id/traces", RequirePermission(PermTraceView), s.handleGetTraces)
+		v1.POST("/sandboxes/:id/replay", RequirePermission(PermTraceReplay), s.handleStartReplay)
+		v1.GET("/sandboxes/:id/replay/next", RequirePermission(PermTraceReplay), s.handleReplayNext)
+		v1.POST("/policies/validate", RequirePermission(PermPolicyManage), s.handleValidatePolicy)
+		v1.GET("/sandboxes/:id/ws", RequirePermission(PermTraceView), s.handleWebSocket)
 
-		v1.GET("/dashboard/stats", s.handleGetDashboardStats)
-		v1.GET("/dashboard/activity", s.handleGetRecentActivity)
-		v1.GET("/audit", s.handleGetAuditLog)
+		v1.GET("/dashboard/stats", RequirePermission(PermTraceView), s.handleGetDashboardStats)
+		v1.GET("/dashboard/activity", RequirePermission(PermTraceView), s.handleGetRecentActivity)
+		v1.GET("/audit", RequirePermission(PermAuditView), s.handleGetAuditLog)
 	}
 }
 

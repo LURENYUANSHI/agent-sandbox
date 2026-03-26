@@ -1,6 +1,9 @@
 # AgentSandbox
 
 [![CI](https://github.com/LURENYUANSHI/agent-sandbox/actions/workflows/ci.yml/badge.svg)](https://github.com/LURENYUANSHI/agent-sandbox/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-84.3%25-brightgreen)](docs/v0.3.0-evaluation.md)
+[![Go Report](https://goreportcard.com/badge/github.com/LURENYUANSHI/agent-sandbox)](https://goreportcard.com/report/github.com/LURENYUANSHI/agent-sandbox)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
 > Open-source runtime sandbox for AI agents with policy enforcement, trace recording, and replay debugging.
 
@@ -51,6 +54,28 @@ AgentSandbox provides a secure execution layer that:
 Flow: Agent Action → Policy Check → Execute → Record Trace
 ```
 
+## Quick Demo
+
+Try AgentSandbox instantly with the interactive demo:
+
+```bash
+# Run the interactive demo (shows policy enforcement, tracing, and replay)
+go run examples/demo/main.go
+
+# Or use the one-command demo script
+bash scripts/demo.sh
+```
+
+### More Examples
+
+```bash
+# Simulated coding agent: reads, modifies, and formats Go source files
+go run examples/coding-agent/main.go
+
+# Simulated web scraper: HTTP requests with filesystem restrictions
+go run examples/web-scraper/main.go
+```
+
 ## Quick Start
 
 ### Using Docker Compose (recommended)
@@ -83,6 +108,65 @@ make run-server
 make run-web
 ```
 
+## MCP Server (AI Agent Integration)
+
+AgentSandbox includes an MCP (Model Context Protocol) server that lets AI agents like Claude use the sandbox as a tool. The MCP server exposes sandbox operations over stdio using JSON-RPC 2.0.
+
+### Setup for Claude Desktop
+
+```bash
+# Build the MCP server
+make build-mcp
+
+# Add to claude_desktop_config.json:
+```
+
+```json
+{
+  "mcpServers": {
+    "agent-sandbox": {
+      "command": "/path/to/bin/agent-sandbox-mcp",
+      "args": ["--policy", "/path/to/configs/default-policy.yaml"]
+    }
+  }
+}
+```
+
+### MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `sandbox_create` | Create an isolated sandbox with policy enforcement |
+| `sandbox_exec` | Execute actions (file, network, process) with policy checks |
+| `sandbox_stop` | Stop and clean up a sandbox |
+| `sandbox_traces` | View execution audit trail |
+| `sandbox_policy_check` | Pre-check if an action would be allowed |
+
+See [mcp/README.md](mcp/README.md) for full documentation.
+
+## Python SDK
+
+A Python client library for integrating AgentSandbox into your applications:
+
+```bash
+# Install from source
+pip install -e sdk/python/
+```
+
+```python
+from agent_sandbox import SandboxClient
+
+client = SandboxClient("http://localhost:8080")
+
+# Create and use a sandbox
+sandbox = client.create_sandbox(name="my-agent", policy_file="configs/default-policy.yaml")
+result = client.exec_action(sandbox["id"], action_type="shell", command="echo hello")
+traces = client.get_traces(sandbox["id"])
+client.stop_sandbox(sandbox["id"])
+```
+
+See [sdk/python/README.md](sdk/python/README.md) for full documentation.
+
 ## CLI Usage
 
 ```bash
@@ -109,6 +193,20 @@ AgentSandbox includes multiple layers of security for production deployments:
 - **Input Validation** — All API inputs are validated before processing with structured error responses detailing validation failures.
 - **Audit Logging** — Every policy decision is recorded to a persistent SQLite audit log, queryable via `GET /api/v1/audit`. Supports filtering by sandbox ID, action type, effect, and time range.
 - **Resource Limits** — Per-sandbox enforcement of disk usage and process count limits prevents resource exhaustion.
+- **RBAC** — Role-based access control with 4 roles (admin, operator, viewer, agent) and 8 granular permissions protecting all API endpoints.
+
+## Prometheus Metrics
+
+AgentSandbox exposes Prometheus metrics at `GET /metrics` for monitoring:
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `sandbox_created_total` | Counter | Total sandboxes created |
+| `sandbox_actions_total` | Counter | Actions executed (by type and status) |
+| `sandbox_policy_evaluations_total` | Counter | Policy evaluations (by effect) |
+| `sandbox_api_request_duration_seconds` | Histogram | API request latency (by method and path) |
+
+Integrate with Grafana for real-time dashboards and alerting.
 
 ## API Reference
 
@@ -131,6 +229,8 @@ AgentSandbox includes multiple layers of security for production deployments:
 | `GET`    | `/api/v1/dashboard/stats`           | Dashboard statistics       |
 | `GET`    | `/api/v1/dashboard/activity`        | Recent activity feed       |
 | `GET`    | `/api/v1/audit`                     | Query audit log            |
+| `GET`    | `/metrics`                          | Prometheus metrics         |
+| `GET`    | `/swagger/*`                        | Swagger API documentation  |
 
 ## Policy Configuration
 
@@ -181,13 +281,17 @@ ai-sandbox/
 │   ├── executor/         # Action executor (filesystem, network, process)
 │   ├── policy/           # Policy engine and YAML parser
 │   ├── trace/            # Trace recording, storage, replay, OTel export
-│   ├── api/              # REST API server and handlers
+│   ├── api/              # REST API, auth, RBAC, rate limiting, validation
+│   ├── metrics/          # Prometheus metrics collectors
 │   └── types/            # Shared types and interfaces
+├── mcp/                  # MCP server for AI agent integration
+├── sdk/python/           # Python SDK client library
+├── examples/             # Interactive demo examples
 ├── web/                  # React dashboard (Vite + TailwindCSS)
 ├── configs/              # Policy configuration files
 ├── docker/               # Dockerfile and docker-compose
+├── docs/                 # Architecture docs, Swagger, evaluations
 ├── test/                 # Integration tests and fixtures
-├── docs/                 # Architecture and development docs
 └── scripts/              # Development setup scripts
 ```
 
@@ -199,8 +303,11 @@ ai-sandbox/
 | Policy Engine     | YAML-based declarative rules            |
 | Trace System      | OpenTelemetry-compatible, SQLite store  |
 | CLI               | Go + Cobra                              |
-| API Server        | Go + Gin                                |
+| API Server        | Go + Gin + RBAC + JWT                   |
 | Web Dashboard     | React + TypeScript + Vite + TailwindCSS |
+| MCP Server        | Go, JSON-RPC 2.0 over stdio            |
+| Python SDK        | Python 3.8+, httpx, pydantic            |
+| Monitoring        | Prometheus metrics + Swagger docs       |
 | Build             | Makefile + Docker multi-stage           |
 
 ## Development

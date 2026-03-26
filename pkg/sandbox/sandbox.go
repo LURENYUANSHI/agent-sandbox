@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/LURENYUANSHI/agent-sandbox/pkg/metrics"
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
 )
 
@@ -64,6 +65,7 @@ func (s *Instance) Start(ctx context.Context) error {
 
 	s.resourceMonitor = NewResourceMonitor(s.config)
 	s.status = StatusRunning
+	metrics.SandboxesActive.Inc()
 
 	s.recorder.Record(types.TraceEvent{
 		SandboxID: s.config.ID,
@@ -113,6 +115,7 @@ func (s *Instance) Execute(ctx context.Context, action types.Action, executeFn f
 
 	// 4. If denied, record and return error
 	if !decision.Allowed {
+		metrics.ActionsTotal.WithLabelValues(string(action.Type), "denied").Inc()
 		s.recorder.Record(types.TraceEvent{
 			SandboxID: s.config.ID,
 			Type:      types.EventActionDenied,
@@ -147,6 +150,9 @@ func (s *Instance) Execute(ctx context.Context, action types.Action, executeFn f
 	result, err := executeFn(execCtx, action)
 	elapsed := time.Since(start)
 
+	metrics.ActionsTotal.WithLabelValues(string(action.Type), "allowed").Inc()
+	metrics.ActionDuration.WithLabelValues(string(action.Type)).Observe(elapsed.Seconds())
+
 	// 6. Record outcome
 	if err != nil {
 		s.recorder.Record(types.TraceEvent{
@@ -180,6 +186,7 @@ func (s *Instance) Stop(ctx context.Context) error {
 	}
 
 	s.status = StatusStopped
+	metrics.SandboxesActive.Dec()
 
 	s.recorder.Record(types.TraceEvent{
 		SandboxID: s.config.ID,
