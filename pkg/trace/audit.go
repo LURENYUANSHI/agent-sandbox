@@ -3,6 +3,7 @@ package trace
 import (
 	"database/sql"
 	"fmt"
+	"sync"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -31,9 +32,19 @@ type AuditFilter struct {
 	Limit      int       `json:"limit,omitempty"`
 }
 
+// AuditStats contains aggregate information about the audit log.
+type AuditStats struct {
+	TotalEntries  int64     `json:"total_entries"`
+	OldestEntry   time.Time `json:"oldest_entry"`
+	DiskUsageBytes int64    `json:"disk_usage_bytes"`
+}
+
 // AuditLogger provides persistent audit logging to SQLite for compliance.
 type AuditLogger struct {
-	db *sql.DB
+	db            *sql.DB
+	retentionDays int
+	stopCh        chan struct{}
+	stopOnce      sync.Once
 }
 
 // NewAuditLogger opens (or creates) the SQLite database and initializes the audit_log table.
@@ -46,7 +57,7 @@ func NewAuditLogger(dbPath string) (*AuditLogger, error) {
 		db.Close()
 		return nil, err
 	}
-	return &AuditLogger{db: db}, nil
+	return &AuditLogger{db: db, retentionDays: 90, stopCh: make(chan struct{})}, nil
 }
 
 func migrateAudit(db *sql.DB) error {
@@ -142,7 +153,79 @@ func (a *AuditLogger) QueryAuditLog(filter AuditFilter) ([]AuditEntry, error) {
 	return entries, rows.Err()
 }
 
+// SetRetentionDays configures how long to keep audit entries.
+func (a *AuditLogger) SetRetentionDays(days int) {
+	if days > 0 {
+		a.retentionDays = days
+	}
+}
+
+// Rotate deletes audit entries older than the retention period and returns the count deleted.
+func (a *AuditLogger) Rotate() (int64, error) {
+	cutoff := time.Now().UTC().AddDate(0, 0, -a.retentionDays)
+	result, err := a.db.Exec(`DELETE FROM audit_log WHERE timestamp < ?`, cutoff)
+	if err != nil {
+		return 0, fmt.Errorf("rotate audit log: %w", err)
+	}
+	return result.RowsAffected()
+}
+
+// StartAutoRotation starts a background goroutine that runs Rotate at the given interval.
+func (a *AuditLogger) StartAutoRotation(interval time.Duration) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				a.Rotate()
+			case <-a.stopCh:
+				return
+			}
+		}
+	}()
+}
+
+// StopAutoRotation stops the background rotation goroutine.
+func (a *AuditLogger) StopAutoRotation() {
+	a.stopOnce.Do(func() {
+		close(a.stopCh)
+	})
+}
+
+// GetStats returns aggregate information about the audit log.
+func (a *AuditLogger) GetStats() AuditStats {
+	var stats AuditStats
+
+	a.db.QueryRow(`SELECT COUNT(*) FROM audit_log`).Scan(&stats.TotalEntries)
+
+	var oldest sql.NullString
+	a.db.QueryRow(`SELECT MIN(timestamp) FROM audit_log`).Scan(&oldest)
+	if oldest.Valid && oldest.String != "" {
+		// SQLite MIN() on a Go time.Time value produces "2006-01-02 15:04:05.999999 +0000 UTC"
+		formats := []string{
+			"2006-01-02 15:04:05.999999 +0000 UTC",
+			"2006-01-02 15:04:05.999999999 +0000 UTC",
+			time.RFC3339Nano,
+			"2006-01-02 15:04:05",
+			"2006-01-02T15:04:05Z",
+		}
+		for _, f := range formats {
+			if t, err := time.Parse(f, oldest.String); err == nil {
+				stats.OldestEntry = t
+				break
+			}
+		}
+	}
+
+	// Estimate disk usage: ~200 bytes per row is a reasonable approximation for this schema.
+	stats.DiskUsageBytes = stats.TotalEntries * 200
+
+	return stats
+}
+
 // Close closes the underlying database.
 func (a *AuditLogger) Close() error {
+	a.StopAutoRotation()
 	return a.db.Close()
 }

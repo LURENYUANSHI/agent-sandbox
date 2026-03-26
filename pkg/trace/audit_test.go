@@ -164,6 +164,124 @@ func TestAuditLogger_EntryFields(t *testing.T) {
 	}
 }
 
+func TestAuditLogger_RotateDeletesOldEntries(t *testing.T) {
+	dbPath := filepath.Join(t.TempDir(), "audit_rotate_test.db")
+	logger, err := NewAuditLogger(dbPath)
+	if err != nil {
+		t.Fatalf("NewAuditLogger: %v", err)
+	}
+	defer logger.Close()
+
+	// Insert an old entry directly with a timestamp 100 days ago
+	oldTime := time.Now().UTC().AddDate(0, 0, -100)
+	_, err = logger.db.Exec(
+		`INSERT INTO audit_log (timestamp, sandbox_id, action_type, resource, effect, rule_id, reason, user_id)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		oldTime, "sb-old", "file:read", "/old", "allow", "r1", "old entry", "u1",
+	)
+	if err != nil {
+		t.Fatalf("insert old entry: %v", err)
+	}
+
+	// Insert a recent entry
+	err = logger.LogDecision("sb-new", "file:write", "/new", "allow", "r2", "new entry", "u2")
+	if err != nil {
+		t.Fatalf("LogDecision: %v", err)
+	}
+
+	logger.SetRetentionDays(90)
+	deleted, err := logger.Rotate()
+	if err != nil {
+		t.Fatalf("Rotate: %v", err)
+	}
+	if deleted != 1 {
+		t.Errorf("expected 1 deleted, got %d", deleted)
+	}
+
+	entries, _ := logger.QueryAuditLog(AuditFilter{})
+	if len(entries) != 1 {
+		t.Errorf("expected 1 remaining entry, got %d", len(entries))
+	}
+	if entries[0].SandboxID != "sb-new" {
+		t.Errorf("expected remaining entry to be sb-new, got %s", entries[0].SandboxID)
+	}
+}
+
+func TestAuditLogger_RotateKeepsRecentEntries(t *testing.T) {
+	dbPath := filepath.Join(t.TempDir(), "audit_rotate_keep_test.db")
+	logger, err := NewAuditLogger(dbPath)
+	if err != nil {
+		t.Fatalf("NewAuditLogger: %v", err)
+	}
+	defer logger.Close()
+
+	// Insert only recent entries
+	logger.LogDecision("sb-1", "file:read", "/a", "allow", "r1", "", "u1")
+	logger.LogDecision("sb-2", "file:write", "/b", "deny", "r2", "", "u2")
+
+	logger.SetRetentionDays(90)
+	deleted, err := logger.Rotate()
+	if err != nil {
+		t.Fatalf("Rotate: %v", err)
+	}
+	if deleted != 0 {
+		t.Errorf("expected 0 deleted, got %d", deleted)
+	}
+
+	entries, _ := logger.QueryAuditLog(AuditFilter{})
+	if len(entries) != 2 {
+		t.Errorf("expected 2 entries, got %d", len(entries))
+	}
+}
+
+func TestAuditLogger_GetStats(t *testing.T) {
+	dbPath := filepath.Join(t.TempDir(), "audit_stats_test.db")
+	logger, err := NewAuditLogger(dbPath)
+	if err != nil {
+		t.Fatalf("NewAuditLogger: %v", err)
+	}
+	defer logger.Close()
+
+	// Empty DB
+	stats := logger.GetStats()
+	if stats.TotalEntries != 0 {
+		t.Errorf("expected 0 entries, got %d", stats.TotalEntries)
+	}
+
+	// Add entries
+	logger.LogDecision("sb-1", "file:read", "/a", "allow", "r1", "", "u1")
+	logger.LogDecision("sb-2", "file:write", "/b", "deny", "r2", "", "u2")
+	logger.LogDecision("sb-3", "proc:exec", "/c", "allow", "r3", "", "u3")
+
+	stats = logger.GetStats()
+	if stats.TotalEntries != 3 {
+		t.Errorf("expected 3 entries, got %d", stats.TotalEntries)
+	}
+	if stats.OldestEntry.IsZero() {
+		t.Error("expected non-zero oldest entry")
+	}
+	if stats.DiskUsageBytes != 3*200 {
+		t.Errorf("expected disk usage %d, got %d", 3*200, stats.DiskUsageBytes)
+	}
+}
+
+func TestAuditLogger_AutoRotation(t *testing.T) {
+	dbPath := filepath.Join(t.TempDir(), "audit_autorotate_test.db")
+	logger, err := NewAuditLogger(dbPath)
+	if err != nil {
+		t.Fatalf("NewAuditLogger: %v", err)
+	}
+	defer logger.Close()
+
+	// Start and stop should not panic or block
+	logger.StartAutoRotation(50 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
+	logger.StopAutoRotation()
+
+	// Calling StopAutoRotation again should be safe (idempotent)
+	logger.StopAutoRotation()
+}
+
 func TestAuditLogger_CombinedFilters(t *testing.T) {
 	dbPath := filepath.Join(t.TempDir(), "audit_combo_test.db")
 	logger, err := NewAuditLogger(dbPath)
