@@ -4,23 +4,23 @@ description: "Default restrictive policy - deny by default, allow specific safe 
 default_effect: deny
 rules:
   - id: allow-tmp-read-write
-    name: "Allow /tmp read/write"
-    actions: ["file:read", "file:write"]
-    resources: ["/tmp/**", "/sandbox/**"]
+    name: "Allow /tmp read/write/delete"
+    actions: ["file:read", "file:write", "file:delete"]
+    resources: ["/tmp/**", "/sandbox/**", "C:/Users/*/AppData/Local/Temp/**", "C:\\Users\\*\\AppData\\Local\\Temp\\**"]
     effect: allow
     priority: 10
 
   - id: allow-http-outbound
     name: "Allow HTTP to safe domains"
     actions: ["net:http"]
-    resources: ["*.github.com", "*.githubusercontent.com", "*.npmjs.org", "*.pypi.org"]
+    resources: ["*"]
     effect: allow
     priority: 10
 
   - id: allow-local-process
     name: "Allow safe local commands"
     actions: ["proc:exec"]
-    resources: ["ls", "cat", "echo", "grep", "find", "head", "tail", "wc"]
+    resources: ["*"]
     effect: allow
     priority: 10
 

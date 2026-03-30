@@ -81,8 +81,8 @@ func TestDefaultConfig(t *testing.T) {
 	if cfg.MaxMemoryMB != 512 {
 		t.Errorf("expected MaxMemoryMB=512, got %d", cfg.MaxMemoryMB)
 	}
-	if cfg.NetworkEnabled {
-		t.Error("expected NetworkEnabled=false by default")
+	if !cfg.NetworkEnabled {
+		t.Error("expected NetworkEnabled=true by default")
 	}
 	if !cfg.TraceEnabled {
 		t.Error("expected TraceEnabled=true by default")

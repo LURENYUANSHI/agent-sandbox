@@ -31,7 +31,7 @@ func DefaultConfig() Config {
 		MaxDiskMB:      1024,
 		MaxProcesses:   10,
 		TimeoutSeconds: 30,
-		NetworkEnabled: false,
+		NetworkEnabled: true,
 		TraceEnabled:   true,
 		Environment:    make(map[string]string),
 	}

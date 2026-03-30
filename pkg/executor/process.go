@@ -30,12 +30,25 @@ func (p *ProcessExecutor) ExecuteProcess(ctx context.Context, action types.Actio
 		return nil, fmt.Errorf("process.exec requires 'command' parameter")
 	}
 
-	args := splitArgs(action.Params["args"])
+	// Split command into executable and args if no separate args provided
+	var cmdName string
+	var args []string
+	if action.Params["args"] != "" {
+		cmdName = command
+		args = splitArgs(action.Params["args"])
+	} else {
+		parts := splitArgs(command)
+		if len(parts) == 0 {
+			return nil, fmt.Errorf("empty command")
+		}
+		cmdName = parts[0]
+		args = parts[1:]
+	}
 
 	execCtx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(execCtx, command, args...)
+	cmd := exec.CommandContext(execCtx, cmdName, args...)
 	cmd.Dir = p.workDir
 
 	var stdout, stderr bytes.Buffer

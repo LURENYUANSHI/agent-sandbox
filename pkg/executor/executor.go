@@ -35,24 +35,27 @@ func (e *Executor) Execute(ctx context.Context, action types.Action) (*types.Act
 	var result *types.ActionResult
 	var err error
 
+	// Normalize action type: support both colon (file:read) and dot (file.read) formats
+	normalizedType := action.Type
 	switch action.Type {
-	case types.ActionTypeFileRead:
+	case types.ActionFileRead, types.ActionTypeFileRead:
 		result, err = e.fs.ExecuteFileRead(ctx, action)
-	case types.ActionTypeFileWrite:
+	case types.ActionFileWrite, types.ActionTypeFileWrite:
 		result, err = e.fs.ExecuteFileWrite(ctx, action)
-	case types.ActionTypeFileDelete:
+	case types.ActionFileDelete, types.ActionTypeFileDelete:
 		result, err = e.fs.ExecuteFileDelete(ctx, action)
-	case types.ActionTypeNetHTTP:
+	case types.ActionNetHTTP, types.ActionTypeNetHTTP:
 		result, err = e.net.ExecuteNetHTTP(ctx, action)
-	case types.ActionTypeNetConnect:
+	case types.ActionNetConnect, types.ActionTypeNetConnect:
 		result, err = e.net.ExecuteNetConnect(ctx, action)
-	case types.ActionTypeProcess:
+	case types.ActionProcExec, types.ActionTypeProcess:
 		result, err = e.proc.ExecuteProcess(ctx, action)
-	case types.ActionTypeShell:
+	case types.ActionShellExec, types.ActionTypeShell:
 		result, err = e.proc.ExecuteShell(ctx, action)
 	default:
-		return nil, fmt.Errorf("unsupported action type: %s", action.Type)
+		return nil, fmt.Errorf("unsupported action type: %s", normalizedType)
 	}
+	_ = normalizedType
 
 	if err != nil {
 		return nil, err

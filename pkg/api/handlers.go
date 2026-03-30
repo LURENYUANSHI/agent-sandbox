@@ -164,8 +164,24 @@ func (s *Server) handleCreateSandbox(c *gin.Context) {
 
 	engine := policy.NewEngineWithConfig(s.config.PolicyConfig)
 
-	if req.PolicyFile != "" {
-		p, err := policy.ParseFile(req.PolicyFile)
+	policyFile := req.PolicyFile
+	if policyFile == "" {
+		// Try default policy locations
+		candidates := []string{
+			"configs/default-policy.yaml",
+			filepath.Join(filepath.Dir(os.Args[0]), "configs", "default-policy.yaml"),
+			"/etc/agent-sandbox/configs/default-policy.yaml",
+		}
+		for _, candidate := range candidates {
+			if _, err := os.Stat(candidate); err == nil {
+				policyFile = candidate
+				break
+			}
+		}
+	}
+
+	if policyFile != "" {
+		p, err := policy.ParseFile(policyFile)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "load policy: " + err.Error()})
 			return
@@ -175,6 +191,19 @@ func (s *Server) handleCreateSandbox(c *gin.Context) {
 			return
 		}
 	}
+
+	// Auto-allow the sandbox's own root directory
+	sandboxPolicy := engine.GetPolicy()
+	sandboxRootPattern := filepath.ToSlash(rootDir) + "/**"
+	sandboxPolicy.Rules = append(sandboxPolicy.Rules, types.Rule{
+		ID:        "auto-sandbox-root",
+		Name:      "Allow sandbox root directory",
+		Actions:   []string{"file:read", "file:write", "file:delete"},
+		Resources: []string{sandboxRootPattern},
+		Effect:    types.EffectAllow,
+		Priority:  50,
+	})
+	engine.LoadPolicy(sandboxPolicy)
 
 	recorder, err := trace.NewRecorder("")
 	if err != nil {
@@ -328,9 +357,21 @@ func (s *Server) handleExecAction(c *gin.Context) {
 		return
 	}
 
+	// Derive Resource from params for policy matching
+	resource := req.Params["path"]
+	if resource == "" {
+		resource = req.Params["command"]
+	}
+	if resource == "" {
+		resource = req.Params["url"]
+	}
+	// Normalize path separators for cross-platform policy matching
+	resource = filepath.ToSlash(resource)
+
 	action := types.Action{
 		ID:        uuid.New().String(),
 		Type:      types.ActionType(req.Type),
+		Resource:  resource,
 		Params:    req.Params,
 		Timestamp: time.Now(),
 	}
