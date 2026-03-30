@@ -358,8 +358,8 @@ func TestValidatePolicyInvalid(t *testing.T) {
 	w := doRequest(s, "POST", "/api/v1/policies/validate", map[string]string{
 		"content": ": : not yaml at all [[[",
 	})
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected 200, got %d", w.Code)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", w.Code)
 	}
 	body := parseBody(w)
 	if body["valid"] != false {

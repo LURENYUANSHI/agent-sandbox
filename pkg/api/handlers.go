@@ -40,8 +40,13 @@ type ExecActionRequest struct {
 }
 
 // ValidatePolicyRequest is the request body for validating a policy.
+// Supports both YAML content string and direct JSON policy object.
 type ValidatePolicyRequest struct {
-	Content string `json:"content"`
+	Content       string       `json:"content"`
+	Name          string       `json:"name"`
+	Version       string       `json:"version"`
+	DefaultEffect types.Effect `json:"default_effect"`
+	Rules         []types.Rule `json:"rules"`
 }
 
 // SandboxResponse is the response body for sandbox info.
@@ -580,26 +585,36 @@ func (s *Server) handleReplayNext(c *gin.Context) {
 // @Security BearerAuth
 // @Router /policies/validate [post]
 func (s *Server) handleValidatePolicy(c *gin.Context) {
+	// Try parsing as YAML content string first
 	var req ValidatePolicyRequest
+	var p *types.Policy
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
 		return
 	}
 
-	p, err := policy.Parse([]byte(req.Content))
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"valid":  false,
-			"errors": []string{err.Error()},
-		})
-		return
+	if req.Content != "" {
+		// Parse YAML content
+		var err error
+		p, err = policy.Parse([]byte(req.Content))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"valid": false, "errors": []string{err.Error()}})
+			return
+		}
+	} else {
+		// Try direct JSON policy object: re-read body fields as policy
+		directPolicy := types.Policy{
+			Name:          req.Name,
+			Version:       req.Version,
+			DefaultEffect: req.DefaultEffect,
+			Rules:         req.Rules,
+		}
+		p = &directPolicy
 	}
 
 	if verrs := ValidatePolicy(*p); verrs != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"valid":  false,
-			"errors": verrs.Errors,
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"valid": false, "errors": verrs.Errors})
 		return
 	}
 

@@ -169,8 +169,8 @@ rules:
 	if err != nil {
 		t.Fatalf("validate invalid: %v", err)
 	}
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("invalid policy status = %d, want 200", resp.StatusCode)
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("invalid policy status = %d, want 400", resp.StatusCode)
 	}
 	var invalidResp map[string]interface{}
 	decodeJSON(resp, &invalidResp)

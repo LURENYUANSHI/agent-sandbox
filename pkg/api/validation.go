@@ -123,6 +123,14 @@ func ValidateExecAction(req ExecActionRequest) *ValidationErrors {
 func ValidatePolicy(p types.Policy) *ValidationErrors {
 	var errs []ValidationError
 
+	// Check name is required
+	if p.Name == "" {
+		errs = append(errs, ValidationError{
+			Field:   "name",
+			Message: "policy name is required",
+		})
+	}
+
 	// Check default effect
 	validEffects := map[types.Effect]bool{
 		types.EffectAllow: true,
