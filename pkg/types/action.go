@@ -77,6 +77,29 @@ type ShellAction struct {
 	WorkingDir string `json:"working_dir,omitempty"`
 }
 
+// NormalizeActionType converts dot-separated action types to the canonical
+// colon-separated format used by the policy engine.
+func NormalizeActionType(t ActionType) ActionType {
+	switch t {
+	case ActionTypeFileRead:
+		return ActionFileRead
+	case ActionTypeFileWrite:
+		return ActionFileWrite
+	case ActionTypeFileDelete:
+		return ActionFileDelete
+	case ActionTypeNetHTTP:
+		return ActionNetHTTP
+	case ActionTypeNetConnect:
+		return ActionNetConnect
+	case ActionTypeProcess:
+		return ActionProcExec
+	case ActionTypeShell:
+		return ActionShellExec
+	default:
+		return t
+	}
+}
+
 // ActionResult captures the outcome of executing an action within the sandbox.
 type ActionResult struct {
 	ActionID   string        `json:"action_id,omitempty"`

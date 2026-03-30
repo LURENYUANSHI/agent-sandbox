@@ -365,12 +365,16 @@ func (s *Server) handleExecAction(c *gin.Context) {
 	if resource == "" {
 		resource = req.Params["url"]
 	}
+	if resource == "" {
+		resource = req.Params["host"]
+	}
 	// Normalize path separators for cross-platform policy matching
 	resource = filepath.ToSlash(resource)
 
+	// Normalize action type to colon format for consistent policy evaluation
 	action := types.Action{
 		ID:        uuid.New().String(),
-		Type:      types.ActionType(req.Type),
+		Type:      types.NormalizeActionType(types.ActionType(req.Type)),
 		Resource:  resource,
 		Params:    req.Params,
 		Timestamp: time.Now(),

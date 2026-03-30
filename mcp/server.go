@@ -450,9 +450,10 @@ func (s *MCPServer) toolSandboxExec(args json.RawMessage) mcpToolCallResult {
 		return errorResult(fmt.Sprintf("Sandbox not found: %s", a.SandboxID))
 	}
 
+	// Normalize action type to colon format for consistent policy evaluation
 	action := types.Action{
 		ID:        uuid.New().String(),
-		Type:      types.ActionType(a.ActionType),
+		Type:      types.NormalizeActionType(types.ActionType(a.ActionType)),
 		Params:    a.Params,
 		Timestamp: time.Now(),
 	}

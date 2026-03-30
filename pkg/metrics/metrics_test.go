@@ -125,3 +125,49 @@ func TestGaugeIncrementDecrement(t *testing.T) {
 		t.Errorf("SandboxesActive = %v, want 1", got)
 	}
 }
+
+func TestAPIRequestsCounter(t *testing.T) {
+	resetRegistry()
+
+	APIRequests.WithLabelValues("GET", "/api/v1/health", "200").Inc()
+	APIRequests.WithLabelValues("POST", "/api/v1/sandboxes", "201").Inc()
+	APIRequests.WithLabelValues("GET", "/api/v1/health", "200").Inc()
+
+	var m dto.Metric
+	if err := APIRequests.WithLabelValues("GET", "/api/v1/health", "200").Write(&m); err != nil {
+		t.Fatalf("failed to write metric: %v", err)
+	}
+	if got := m.GetCounter().GetValue(); got != 2 {
+		t.Errorf("APIRequests(GET, /health, 200) = %v, want 2", got)
+	}
+
+	if err := APIRequests.WithLabelValues("POST", "/api/v1/sandboxes", "201").Write(&m); err != nil {
+		t.Fatalf("failed to write metric: %v", err)
+	}
+	if got := m.GetCounter().GetValue(); got != 1 {
+		t.Errorf("APIRequests(POST, /sandboxes, 201) = %v, want 1", got)
+	}
+}
+
+func TestAPILatencyHistogram(t *testing.T) {
+	resetRegistry()
+
+	APILatency.WithLabelValues("GET", "/api/v1/health").Observe(0.01)
+	APILatency.WithLabelValues("GET", "/api/v1/health").Observe(0.05)
+	APILatency.WithLabelValues("POST", "/api/v1/sandboxes").Observe(0.1)
+
+	var m dto.Metric
+	observer := APILatency.WithLabelValues("GET", "/api/v1/health")
+	histogram := observer.(prometheus.Histogram)
+	if err := histogram.Write(&m); err != nil {
+		t.Fatalf("failed to write metric: %v", err)
+	}
+	h := m.GetHistogram()
+	if got := h.GetSampleCount(); got != 2 {
+		t.Errorf("APILatency(GET, /health) sample count = %v, want 2", got)
+	}
+	sum := h.GetSampleSum()
+	if sum < 0.059 || sum > 0.061 {
+		t.Errorf("APILatency(GET, /health) sample sum = %v, want ~0.06", sum)
+	}
+}

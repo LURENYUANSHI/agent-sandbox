@@ -35,8 +35,7 @@ func (e *Executor) Execute(ctx context.Context, action types.Action) (*types.Act
 	var result *types.ActionResult
 	var err error
 
-	// Normalize action type: support both colon (file:read) and dot (file.read) formats
-	normalizedType := action.Type
+	// Support both colon (file:read) and dot (file.read) formats
 	switch action.Type {
 	case types.ActionFileRead, types.ActionTypeFileRead:
 		result, err = e.fs.ExecuteFileRead(ctx, action)
@@ -53,9 +52,8 @@ func (e *Executor) Execute(ctx context.Context, action types.Action) (*types.Act
 	case types.ActionShellExec, types.ActionTypeShell:
 		result, err = e.proc.ExecuteShell(ctx, action)
 	default:
-		return nil, fmt.Errorf("unsupported action type: %s", normalizedType)
+		return nil, fmt.Errorf("unsupported action type: %s", action.Type)
 	}
-	_ = normalizedType
 
 	if err != nil {
 		return nil, err

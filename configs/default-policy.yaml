@@ -1,6 +1,6 @@
 name: default
 version: "1.0"
-description: "Default restrictive policy - deny by default, allow specific safe operations"
+description: "Default policy - deny by default, allow file ops in temp/sandbox, HTTP, and process exec; deny shell"
 default_effect: deny
 rules:
   - id: allow-tmp-read-write
