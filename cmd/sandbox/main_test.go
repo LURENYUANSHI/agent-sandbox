@@ -265,6 +265,327 @@ func TestCLIPolicyValidate(t *testing.T) {
 	}
 }
 
+func TestCLIVersionJSON(t *testing.T) {
+	output, err := runCLI("version", "--output", "json")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var result map[string]string
+	if err := json.Unmarshal([]byte(strings.TrimSpace(output)), &result); err != nil {
+		t.Fatalf("invalid JSON: %v\nraw: %s", err, output)
+	}
+	if result["version"] != version {
+		t.Errorf("expected version %s, got %s", version, result["version"])
+	}
+}
+
+func TestCLICreateJSON(t *testing.T) {
+	resetRegistry()
+	tmpDir := t.TempDir()
+
+	output, err := runCLI("create", "--name", "json-test", "--root", tmpDir, "--output", "json")
+	if err != nil {
+		t.Fatalf("create json failed: %v", err)
+	}
+	var result map[string]string
+	if err := json.Unmarshal([]byte(strings.TrimSpace(output)), &result); err != nil {
+		t.Fatalf("invalid JSON: %v\nraw: %s", err, output)
+	}
+	if result["name"] != "json-test" {
+		t.Errorf("expected name json-test, got %s", result["name"])
+	}
+	if result["id"] == "" {
+		t.Error("expected non-empty id")
+	}
+}
+
+func TestCLIStartNotFound(t *testing.T) {
+	resetRegistry()
+	_, err := runCLI("start", "nonexistent-id")
+	if err == nil {
+		t.Fatal("expected error for nonexistent sandbox")
+	}
+	if !strings.Contains(err.Error(), "not found") {
+		t.Errorf("expected 'not found' in error, got: %v", err)
+	}
+}
+
+func TestCLIStopNotFound(t *testing.T) {
+	resetRegistry()
+	_, err := runCLI("stop", "nonexistent-id")
+	if err == nil {
+		t.Fatal("expected error for nonexistent sandbox")
+	}
+	if !strings.Contains(err.Error(), "not found") {
+		t.Errorf("expected 'not found' in error, got: %v", err)
+	}
+}
+
+func TestCLIExecMissingArgs(t *testing.T) {
+	resetRegistry()
+	_, err := runCLI("exec")
+	if err == nil {
+		t.Fatal("expected error for missing exec args")
+	}
+}
+
+func TestCLITraceNotFound(t *testing.T) {
+	resetRegistry()
+	_, err := runCLI("trace", "nonexistent-id")
+	if err == nil {
+		t.Fatal("expected error for nonexistent sandbox")
+	}
+}
+
+func TestCLIReplayNotFound(t *testing.T) {
+	resetRegistry()
+	_, err := runCLI("replay", "nonexistent-id")
+	if err == nil {
+		t.Fatal("expected error for nonexistent sandbox")
+	}
+}
+
+func TestCLIListEmpty(t *testing.T) {
+	resetRegistry()
+	output, err := runCLI("list")
+	if err != nil {
+		t.Fatalf("list failed: %v", err)
+	}
+	if !strings.Contains(output, "No sandboxes found") {
+		t.Errorf("expected 'No sandboxes found', got: %s", output)
+	}
+}
+
+func TestCLIListEmptyJSON(t *testing.T) {
+	resetRegistry()
+	output, err := runCLI("list", "--output", "json")
+	if err != nil {
+		t.Fatalf("list json failed: %v", err)
+	}
+	trimmed := strings.TrimSpace(output)
+	if trimmed != "null" && trimmed != "[]" {
+		// Either null or empty array is acceptable for empty list
+		var items []map[string]interface{}
+		if err := json.Unmarshal([]byte(trimmed), &items); err != nil {
+			t.Fatalf("invalid JSON: %v\nraw: %s", err, output)
+		}
+	}
+}
+
+func TestCLITraceJSON(t *testing.T) {
+	resetRegistry()
+	tmpDir := t.TempDir()
+
+	policyYAML := "name: test\nversion: \"1.0\"\ndescription: test\ndefault_effect: allow\nrules: []\n"
+	policyFile := filepath.Join(tmpDir, "policy.yaml")
+	os.WriteFile(policyFile, []byte(policyYAML), 0644)
+
+	// Create a sandbox
+	output, err := runCLI("create", "--name", "trace-json", "--root", tmpDir, "--policy", policyFile)
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	uuidRe := regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+	sandboxID := uuidRe.FindString(output)
+	if sandboxID == "" {
+		t.Fatalf("no UUID found: %s", output)
+	}
+
+	// Start it
+	_, err = runCLI("start", sandboxID)
+	if err != nil {
+		t.Fatalf("start: %v", err)
+	}
+
+	// Trace with json format
+	output, err = runCLI("trace", sandboxID, "--format", "json")
+	if err != nil {
+		t.Fatalf("trace json: %v", err)
+	}
+	if !strings.Contains(output, "[") {
+		t.Errorf("expected JSON array in trace output: %s", output)
+	}
+}
+
+func TestCLIReplayWithEvents(t *testing.T) {
+	resetRegistry()
+	tmpDir := t.TempDir()
+
+	policyYAML := "name: test\nversion: \"1.0\"\ndescription: test\ndefault_effect: allow\nrules: []\n"
+	policyFile := filepath.Join(tmpDir, "policy.yaml")
+	os.WriteFile(policyFile, []byte(policyYAML), 0644)
+
+	output, err := runCLI("create", "--name", "replay-test", "--root", tmpDir, "--policy", policyFile)
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	uuidRe := regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+	sandboxID := uuidRe.FindString(output)
+	if sandboxID == "" {
+		t.Fatalf("no UUID found: %s", output)
+	}
+
+	_, err = runCLI("start", sandboxID)
+	if err != nil {
+		t.Fatalf("start: %v", err)
+	}
+
+	// Replay (without --step flag so it runs non-interactively)
+	output, err = runCLI("replay", sandboxID)
+	if err != nil {
+		t.Fatalf("replay: %v", err)
+	}
+	if !strings.Contains(output, "Replay") {
+		t.Errorf("expected 'Replay' in output: %s", output)
+	}
+}
+
+func TestCLIPolicyValidateJSON(t *testing.T) {
+	policyPath := filepath.Join(projectRoot(), "configs", "default-policy.yaml")
+	if _, err := os.Stat(policyPath); os.IsNotExist(err) {
+		t.Skipf("policy file not found: %s", policyPath)
+	}
+
+	output, err := runCLI("policy", "validate", policyPath, "--output", "json")
+	if err != nil {
+		t.Fatalf("policy validate json: %v", err)
+	}
+	var result map[string]interface{}
+	if err := json.Unmarshal([]byte(strings.TrimSpace(output)), &result); err != nil {
+		t.Fatalf("invalid JSON: %v\nraw: %s", err, output)
+	}
+	if result["valid"] != true {
+		t.Errorf("expected valid=true, got %v", result["valid"])
+	}
+}
+
+func TestCLIPolicyValidateInvalidJSON(t *testing.T) {
+	output, err := runCLI("policy", "validate", "/nonexistent/policy.yaml", "--output", "json")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var result map[string]interface{}
+	if err := json.Unmarshal([]byte(strings.TrimSpace(output)), &result); err != nil {
+		t.Fatalf("invalid JSON: %v\nraw: %s", err, output)
+	}
+	if result["valid"] != false {
+		t.Errorf("expected valid=false, got %v", result["valid"])
+	}
+}
+
+func TestCLIExecJSON(t *testing.T) {
+	resetRegistry()
+	tmpDir := t.TempDir()
+
+	policyYAML := "name: test\nversion: \"1.0\"\ndescription: test\ndefault_effect: allow\nrules: []\n"
+	policyFile := filepath.Join(tmpDir, "policy.yaml")
+	os.WriteFile(policyFile, []byte(policyYAML), 0644)
+	os.WriteFile(filepath.Join(tmpDir, "test.txt"), []byte("hello"), 0644)
+
+	output, err := runCLI("create", "--name", "exec-json", "--root", tmpDir, "--policy", policyFile)
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	uuidRe := regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+	sandboxID := uuidRe.FindString(output)
+
+	_, err = runCLI("start", sandboxID)
+	if err != nil {
+		t.Fatalf("start: %v", err)
+	}
+
+	output, err = runCLI("exec", sandboxID, "file.read", "--param", "path=test.txt", "--output", "json")
+	if err != nil {
+		t.Fatalf("exec json: %v", err)
+	}
+	var result map[string]interface{}
+	if err := json.Unmarshal([]byte(strings.TrimSpace(output)), &result); err != nil {
+		t.Fatalf("invalid JSON: %v\nraw: %s", err, output)
+	}
+	if result["success"] != true {
+		t.Errorf("expected success=true, got %v", result["success"])
+	}
+}
+
+func TestCLIStartJSON(t *testing.T) {
+	resetRegistry()
+	tmpDir := t.TempDir()
+
+	output, err := runCLI("create", "--name", "start-json", "--root", tmpDir)
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	uuidRe := regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+	sandboxID := uuidRe.FindString(output)
+
+	output, err = runCLI("start", sandboxID, "--output", "json")
+	if err != nil {
+		t.Fatalf("start json: %v", err)
+	}
+	var result map[string]string
+	if err := json.Unmarshal([]byte(strings.TrimSpace(output)), &result); err != nil {
+		t.Fatalf("invalid JSON: %v\nraw: %s", err, output)
+	}
+	if result["id"] != sandboxID {
+		t.Errorf("expected id %s, got %s", sandboxID, result["id"])
+	}
+}
+
+func TestCLIStopJSON(t *testing.T) {
+	resetRegistry()
+	tmpDir := t.TempDir()
+
+	output, err := runCLI("create", "--name", "stop-json", "--root", tmpDir)
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	uuidRe := regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+	sandboxID := uuidRe.FindString(output)
+
+	_, err = runCLI("start", sandboxID)
+	if err != nil {
+		t.Fatalf("start: %v", err)
+	}
+
+	output, err = runCLI("stop", sandboxID, "--output", "json")
+	if err != nil {
+		t.Fatalf("stop json: %v", err)
+	}
+	var result map[string]string
+	if err := json.Unmarshal([]byte(strings.TrimSpace(output)), &result); err != nil {
+		t.Fatalf("invalid JSON: %v\nraw: %s", err, output)
+	}
+	if result["id"] != sandboxID {
+		t.Errorf("expected id %s, got %s", sandboxID, result["id"])
+	}
+}
+
+func TestCLIExecInvalidParam(t *testing.T) {
+	resetRegistry()
+	tmpDir := t.TempDir()
+
+	output, err := runCLI("create", "--name", "param-test", "--root", tmpDir)
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	uuidRe := regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+	sandboxID := uuidRe.FindString(output)
+
+	_, err = runCLI("start", sandboxID)
+	if err != nil {
+		t.Fatalf("start: %v", err)
+	}
+
+	// Invalid param format (no =)
+	_, err = runCLI("exec", sandboxID, "file.read", "--param", "invalid-no-equals")
+	if err == nil {
+		t.Fatal("expected error for invalid param format")
+	}
+	if !strings.Contains(err.Error(), "expected key=value") {
+		t.Errorf("expected 'expected key=value' in error, got: %v", err)
+	}
+}
+
 func TestCLIPolicyValidateInvalid(t *testing.T) {
 	output, err := runCLI("policy", "validate", "/nonexistent/policy.yaml")
 	if err != nil {

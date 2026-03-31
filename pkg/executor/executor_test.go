@@ -775,3 +775,333 @@ func TestProcess_StderrOutput(t *testing.T) {
 		// On some systems stderr output may vary; just ensure it doesn't crash
 	}
 }
+
+// --- Additional coverage tests ---
+
+func TestExecutor_DispatchColonFormats(t *testing.T) {
+	cfg := testConfig(t)
+	exec := NewExecutor(cfg, testExecConfig())
+	ctx := context.Background()
+
+	// Write using colon format (file:write)
+	writeAction := types.Action{
+		ID:   "colon-write",
+		Type: types.ActionFileWrite,
+		Params: map[string]string{
+			"path":    "colon.txt",
+			"content": "colon format",
+		},
+	}
+	result, err := exec.Execute(ctx, writeAction)
+	if err != nil {
+		t.Fatalf("Execute file:write: %v", err)
+	}
+	if !result.Success {
+		t.Error("expected success")
+	}
+
+	// Read using colon format (file:read)
+	readAction := types.Action{
+		ID:     "colon-read",
+		Type:   types.ActionFileRead,
+		Params: map[string]string{"path": "colon.txt"},
+	}
+	result, err = exec.Execute(ctx, readAction)
+	if err != nil {
+		t.Fatalf("Execute file:read: %v", err)
+	}
+	if result.Output != "colon format" {
+		t.Errorf("expected 'colon format', got %q", result.Output)
+	}
+
+	// Delete using colon format (file:delete)
+	delAction := types.Action{
+		ID:     "colon-del",
+		Type:   types.ActionFileDelete,
+		Params: map[string]string{"path": "colon.txt"},
+	}
+	result, err = exec.Execute(ctx, delAction)
+	if err != nil {
+		t.Fatalf("Execute file:delete: %v", err)
+	}
+	if !result.Success {
+		t.Error("expected success")
+	}
+}
+
+func TestExecutor_DispatchNetHTTPDisabled(t *testing.T) {
+	cfg := testConfig(t)
+	cfg.NetworkEnabled = false
+	exec := NewExecutor(cfg, testExecConfig())
+
+	action := types.Action{
+		ID:     "net-disabled",
+		Type:   types.ActionTypeNetHTTP,
+		Params: map[string]string{"url": "http://example.com"},
+	}
+	_, err := exec.Execute(context.Background(), action)
+	if err == nil {
+		t.Error("expected error when network is disabled")
+	}
+}
+
+func TestExecutor_DispatchNetConnectDisabled(t *testing.T) {
+	cfg := testConfig(t)
+	cfg.NetworkEnabled = false
+	exec := NewExecutor(cfg, testExecConfig())
+
+	action := types.Action{
+		ID:     "conn-disabled",
+		Type:   types.ActionTypeNetConnect,
+		Params: map[string]string{"host": "localhost", "port": "80"},
+	}
+	_, err := exec.Execute(context.Background(), action)
+	if err == nil {
+		t.Error("expected error when network is disabled")
+	}
+}
+
+func TestExecutor_DispatchNetColonFormats(t *testing.T) {
+	cfg := testConfig(t)
+	cfg.NetworkEnabled = false
+	exec := NewExecutor(cfg, testExecConfig())
+
+	// net:http colon format
+	action := types.Action{
+		ID:     "colon-http",
+		Type:   types.ActionNetHTTP,
+		Params: map[string]string{"url": "http://example.com"},
+	}
+	_, err := exec.Execute(context.Background(), action)
+	if err == nil {
+		t.Error("expected error for disabled network (net:http)")
+	}
+
+	// net:connect colon format
+	action = types.Action{
+		ID:     "colon-conn",
+		Type:   types.ActionNetConnect,
+		Params: map[string]string{"host": "localhost", "port": "80"},
+	}
+	_, err = exec.Execute(context.Background(), action)
+	if err == nil {
+		t.Error("expected error for disabled network (net:connect)")
+	}
+}
+
+func TestExecutor_DispatchProcColon(t *testing.T) {
+	cfg := testConfig(t)
+	exec := NewExecutor(cfg, testExecConfig())
+	ctx := context.Background()
+
+	var action types.Action
+	if runtime.GOOS == "windows" {
+		action = types.Action{
+			ID:   "colon-proc",
+			Type: types.ActionProcExec,
+			Params: map[string]string{
+				"command": "cmd",
+				"args":    "/c echo colon",
+			},
+		}
+	} else {
+		action = types.Action{
+			ID:   "colon-proc",
+			Type: types.ActionProcExec,
+			Params: map[string]string{
+				"command": "echo",
+				"args":    "colon",
+			},
+		}
+	}
+	result, err := exec.Execute(ctx, action)
+	if err != nil {
+		t.Fatalf("proc:exec: %v", err)
+	}
+	if !result.Success {
+		t.Error("expected success")
+	}
+}
+
+func TestExecutor_DispatchShellColon(t *testing.T) {
+	cfg := testConfig(t)
+	exec := NewExecutor(cfg, testExecConfig())
+	ctx := context.Background()
+
+	action := types.Action{
+		ID:     "colon-shell",
+		Type:   types.ActionShellExec,
+		Params: map[string]string{"command": "echo colon-shell"},
+	}
+	result, err := exec.Execute(ctx, action)
+	if err != nil {
+		t.Fatalf("shell:exec: %v", err)
+	}
+	if !result.Success {
+		t.Error("expected success")
+	}
+}
+
+func TestFilesystem_WriteEscapePath(t *testing.T) {
+	cfg := testConfig(t)
+	fs := NewFilesystemExecutor(cfg.RootDir, testExecConfig())
+	ctx := context.Background()
+
+	// Attempt traversal on write
+	action := types.Action{
+		ID:   "escape-write",
+		Type: types.ActionTypeFileWrite,
+		Params: map[string]string{
+			"path":    "../../etc/passwd",
+			"content": "hacked",
+		},
+	}
+	_, err := fs.ExecuteFileWrite(ctx, action)
+	if err == nil {
+		t.Error("expected error for path escape on write")
+	}
+}
+
+func TestFilesystem_DeleteEscapePath(t *testing.T) {
+	cfg := testConfig(t)
+	fs := NewFilesystemExecutor(cfg.RootDir, testExecConfig())
+	ctx := context.Background()
+
+	action := types.Action{
+		ID:   "escape-del",
+		Type: types.ActionTypeFileDelete,
+		Params: map[string]string{"path": "../../etc/passwd"},
+	}
+	_, err := fs.ExecuteFileDelete(ctx, action)
+	if err == nil {
+		t.Error("expected error for path escape on delete")
+	}
+}
+
+func TestFilesystem_NullBytePath(t *testing.T) {
+	cfg := testConfig(t)
+	fs := NewFilesystemExecutor(cfg.RootDir, testExecConfig())
+	ctx := context.Background()
+
+	action := types.Action{
+		ID:     "null-path",
+		Type:   types.ActionTypeFileRead,
+		Params: map[string]string{"path": "test\x00.txt"},
+	}
+	_, err := fs.ExecuteFileRead(ctx, action)
+	if err == nil {
+		t.Error("expected error for null byte in path")
+	}
+}
+
+func TestNetwork_MissingHost(t *testing.T) {
+	net := NewNetworkExecutor(true, testExecConfig())
+	ctx := context.Background()
+
+	action := types.Action{
+		ID:     "no-host",
+		Type:   types.ActionTypeNetConnect,
+		Params: map[string]string{"port": "80"},
+	}
+	_, err := net.ExecuteNetConnect(ctx, action)
+	if err == nil {
+		t.Error("expected error for missing host")
+	}
+}
+
+func TestProcess_ParseArgsQuoted(t *testing.T) {
+	args := parseArgs(`echo "hello world" 'single quotes'`)
+	if len(args) != 3 {
+		t.Fatalf("expected 3 args, got %d: %v", len(args), args)
+	}
+	if args[0] != "echo" {
+		t.Errorf("arg[0] = %q, want echo", args[0])
+	}
+	if args[1] != "hello world" {
+		t.Errorf("arg[1] = %q, want 'hello world'", args[1])
+	}
+	if args[2] != "single quotes" {
+		t.Errorf("arg[2] = %q, want 'single quotes'", args[2])
+	}
+}
+
+func TestProcess_ParseArgsEscaped(t *testing.T) {
+	args := parseArgs(`echo hello\ world`)
+	if len(args) != 2 {
+		t.Fatalf("expected 2 args, got %d: %v", len(args), args)
+	}
+	if args[1] != "hello world" {
+		t.Errorf("arg[1] = %q, want 'hello world'", args[1])
+	}
+}
+
+func TestProcess_SplitArgsEmpty(t *testing.T) {
+	result := splitArgs("")
+	if result != nil {
+		t.Errorf("expected nil for empty string, got %v", result)
+	}
+}
+
+func TestFilesystem_ReadOversizeFile(t *testing.T) {
+	cfg := testConfig(t)
+	fs := NewFilesystemExecutor(cfg.RootDir, testExecConfig())
+	ctx := context.Background()
+
+	// Create a file larger than max read size
+	maxRead := int64(testExecConfig().MaxReadSizeMB) * 1024 * 1024
+	bigContent := make([]byte, maxRead+1)
+	bigFile := filepath.Join(cfg.RootDir, "big.txt")
+	os.WriteFile(bigFile, bigContent, 0644)
+
+	action := types.Action{
+		ID:     "big-read",
+		Type:   types.ActionTypeFileRead,
+		Params: map[string]string{"path": "big.txt"},
+	}
+	_, err := fs.ExecuteFileRead(ctx, action)
+	if err == nil {
+		t.Error("expected error for oversized file read")
+	}
+}
+
+func TestFilesystem_DeleteNonexistent(t *testing.T) {
+	cfg := testConfig(t)
+	fs := NewFilesystemExecutor(cfg.RootDir, testExecConfig())
+	ctx := context.Background()
+
+	action := types.Action{
+		ID:     "del-noexist",
+		Type:   types.ActionTypeFileDelete,
+		Params: map[string]string{"path": "nonexistent.txt"},
+	}
+	_, err := fs.ExecuteFileDelete(ctx, action)
+	if err == nil {
+		t.Error("expected error for deleting nonexistent file")
+	}
+}
+
+func TestProcess_ShellTimeout(t *testing.T) {
+	cfg := testConfig(t)
+	proc := NewProcessExecutor(cfg.RootDir, 500*time.Millisecond)
+	ctx := context.Background()
+
+	var cmd string
+	if runtime.GOOS == "windows" {
+		cmd = "ping -n 5 127.0.0.1"
+	} else {
+		cmd = "sleep 10"
+	}
+
+	action := types.Action{
+		ID:     "shell-timeout",
+		Type:   types.ActionTypeShell,
+		Params: map[string]string{"command": cmd},
+	}
+	result, err := proc.ExecuteShell(ctx, action)
+	if err != nil {
+		t.Fatalf("ExecuteShell: %v", err)
+	}
+	if result.Success {
+		t.Error("expected timeout failure")
+	}
+}

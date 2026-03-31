@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
 	"github.com/LURENYUANSHI/agent-sandbox/pkg/types"
@@ -749,6 +750,359 @@ func TestWebSocketReceivesEvents(t *testing.T) {
 	err = conn.WriteMessage(websocket.PingMessage, nil)
 	if err != nil {
 		t.Errorf("expected ws connection to be alive: %v", err)
+	}
+}
+
+// --- Auth middleware with invalid format ---
+
+func TestAuthInvalidFormat(t *testing.T) {
+	s := NewServer(ServerConfig{
+		Port:        0,
+		DevMode:     true,
+		AuthEnabled: true,
+		AuthSecret:  "test-secret",
+	})
+	req := httptest.NewRequest("GET", "/api/v1/sandboxes", nil)
+	req.Header.Set("Authorization", "Basic dXNlcjpwYXNz") // Basic auth, not Bearer
+	w := httptest.NewRecorder()
+	s.Router().ServeHTTP(w, req)
+
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 for non-Bearer auth, got %d", w.Code)
+	}
+}
+
+// --- Metrics endpoint ---
+
+func TestMetricsEndpoint(t *testing.T) {
+	s := newTestServer()
+	req := httptest.NewRequest("GET", "/metrics", nil)
+	w := httptest.NewRecorder()
+	s.Router().ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 for /metrics, got %d", w.Code)
+	}
+	ct := w.Header().Get("Content-Type")
+	if !strings.Contains(ct, "text/plain") && !strings.Contains(ct, "openmetrics") {
+		t.Errorf("expected text/plain content type, got %q", ct)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "agentsandbox_api_requests_total") {
+		t.Error("expected Prometheus metrics in /metrics response")
+	}
+}
+
+// --- Stop not found ---
+
+func TestStopSandboxNotFound(t *testing.T) {
+	s := newTestServer()
+	w := doRequest(s, "POST", "/api/v1/sandboxes/nonexistent/stop", nil)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
+
+// --- Exec not found ---
+
+func TestExecSandboxNotFound(t *testing.T) {
+	s := newTestServer()
+	w := doRequest(s, "POST", "/api/v1/sandboxes/nonexistent/exec", map[string]interface{}{
+		"type":   "file.read",
+		"params": map[string]string{"path": "/tmp/x"},
+	})
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
+
+// --- Traces not found ---
+
+func TestGetTracesNotFound(t *testing.T) {
+	s := newTestServer()
+	w := doRequest(s, "GET", "/api/v1/sandboxes/nonexistent/traces", nil)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
+
+// --- Replay not found for start ---
+
+func TestReplayStartNotFound(t *testing.T) {
+	s := newTestServer()
+	w := doRequest(s, "POST", "/api/v1/sandboxes/nonexistent/replay", nil)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
+
+// --- Exec with empty body ---
+
+func TestExecEmptyBody(t *testing.T) {
+	s := newTestServer()
+	createResp := doRequest(s, "POST", "/api/v1/sandboxes", map[string]string{"name": "body-test"})
+	id := parseBody(createResp)["id"].(string)
+	doRequest(s, "POST", "/api/v1/sandboxes/"+id+"/start", nil)
+
+	req := httptest.NewRequest("POST", "/api/v1/sandboxes/"+id+"/exec", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.ContentLength = 0
+	w := httptest.NewRecorder()
+	s.Router().ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+// --- Create with empty body ---
+
+func TestCreateSandboxEmptyBody(t *testing.T) {
+	s := newTestServer()
+	req := httptest.NewRequest("POST", "/api/v1/sandboxes", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.ContentLength = 0
+	w := httptest.NewRecorder()
+	s.Router().ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+// --- Validate policy with direct JSON object ---
+
+func TestValidatePolicyDirect(t *testing.T) {
+	s := newTestServer()
+	w := doRequest(s, "POST", "/api/v1/policies/validate", map[string]interface{}{
+		"name":           "direct-policy",
+		"version":        "1.0",
+		"default_effect": "allow",
+		"rules":          []interface{}{},
+	})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	body := parseBody(w)
+	if body["valid"] != true {
+		t.Errorf("expected valid=true, got %v", body["valid"])
+	}
+}
+
+// --- Replay done ---
+
+func TestReplayDone(t *testing.T) {
+	s := newTestServer()
+	createResp := doRequest(s, "POST", "/api/v1/sandboxes", map[string]string{"name": "replay-done"})
+	id := parseBody(createResp)["id"].(string)
+
+	// Start replay
+	doRequest(s, "POST", "/api/v1/sandboxes/"+id+"/replay", nil)
+
+	// Advance until done
+	for i := 0; i < 100; i++ {
+		w := doRequest(s, "GET", "/api/v1/sandboxes/"+id+"/replay/next", nil)
+		if w.Code != http.StatusOK {
+			t.Fatalf("expected 200, got %d", w.Code)
+		}
+		body := parseBody(w)
+		if done, ok := body["done"]; ok && done == true {
+			return // success
+		}
+		if hasMore, ok := body["has_more"]; ok && hasMore == false {
+			// Next call should return done
+			w = doRequest(s, "GET", "/api/v1/sandboxes/"+id+"/replay/next", nil)
+			body = parseBody(w)
+			if done, ok := body["done"]; ok && done == true {
+				return
+			}
+		}
+	}
+}
+
+// --- Swagger endpoint ---
+
+func TestSwaggerEndpoint(t *testing.T) {
+	s := newTestServer()
+	req := httptest.NewRequest("GET", "/swagger/index.html", nil)
+	w := httptest.NewRecorder()
+	s.Router().ServeHTTP(w, req)
+
+	// Swagger may or may not be configured, but shouldn't panic
+	if w.Code == http.StatusInternalServerError {
+		t.Fatalf("swagger endpoint returned 500")
+	}
+}
+
+// --- Start already running ---
+
+func TestStartSandboxAlreadyRunning(t *testing.T) {
+	s := newTestServer()
+	createResp := doRequest(s, "POST", "/api/v1/sandboxes", map[string]string{"name": "double-start"})
+	id := parseBody(createResp)["id"].(string)
+
+	doRequest(s, "POST", "/api/v1/sandboxes/"+id+"/start", nil)
+
+	// Second start should return 409
+	w := doRequest(s, "POST", "/api/v1/sandboxes/"+id+"/start", nil)
+	if w.Code != http.StatusConflict {
+		t.Fatalf("expected 409 for already running sandbox, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+// --- Stop already stopped ---
+
+func TestStopSandboxAlreadyStopped(t *testing.T) {
+	s := newTestServer()
+	createResp := doRequest(s, "POST", "/api/v1/sandboxes", map[string]string{"name": "double-stop"})
+	id := parseBody(createResp)["id"].(string)
+
+	// Don't start it — try to stop directly
+	w := doRequest(s, "POST", "/api/v1/sandboxes/"+id+"/stop", nil)
+	if w.Code != http.StatusConflict {
+		t.Fatalf("expected 409 for not-running sandbox, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+// --- Validate policy missing name ---
+
+func TestValidatePolicyMissingName(t *testing.T) {
+	s := newTestServer()
+	w := doRequest(s, "POST", "/api/v1/policies/validate", map[string]interface{}{
+		"name":           "",
+		"default_effect": "allow",
+	})
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+// --- Recovery middleware ---
+
+func TestRecoveryMiddleware(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(Recovery())
+	r.GET("/panic", func(c *gin.Context) {
+		panic("test panic")
+	})
+
+	req := httptest.NewRequest("GET", "/panic", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("expected 500, got %d", w.Code)
+	}
+}
+
+// --- effectForEvent and detailForEvent ---
+
+func TestEffectForEvent(t *testing.T) {
+	tests := []struct {
+		eventType types.EventType
+		expected  string
+	}{
+		{types.EventActionDenied, "deny"},
+		{types.EventActionFailed, "deny"},
+		{types.EventActionAllowed, "allow"},
+		{types.EventActionExecuted, "allow"},
+		{types.EventSandboxStarted, "audit"},
+		{types.EventSandboxStopped, "audit"},
+	}
+	for _, tt := range tests {
+		ev := types.TraceEvent{Type: tt.eventType}
+		got := effectForEvent(ev)
+		if got != tt.expected {
+			t.Errorf("effectForEvent(%s) = %q, want %q", tt.eventType, got, tt.expected)
+		}
+	}
+}
+
+func TestDetailForEvent(t *testing.T) {
+	tests := []struct {
+		name     string
+		event    types.TraceEvent
+		contains string
+	}{
+		{
+			"sandbox started with name",
+			types.TraceEvent{Type: types.EventSandboxStarted, Data: map[string]string{"name": "test"}},
+			"Sandbox started: test",
+		},
+		{
+			"sandbox started no name",
+			types.TraceEvent{Type: types.EventSandboxStarted, Data: map[string]string{}},
+			"Sandbox started",
+		},
+		{
+			"sandbox stopped",
+			types.TraceEvent{Type: types.EventSandboxStopped},
+			"Sandbox stopped",
+		},
+		{
+			"sandbox created",
+			types.TraceEvent{Type: types.EventSandboxCreated},
+			"Sandbox created",
+		},
+		{
+			"action requested with type",
+			types.TraceEvent{Type: types.EventActionRequested, Data: map[string]string{"type": "file.read"}},
+			"Action requested: file.read",
+		},
+		{
+			"action requested no type",
+			types.TraceEvent{Type: types.EventActionRequested, Data: map[string]string{}},
+			"Action requested",
+		},
+		{
+			"policy evaluated allowed",
+			types.TraceEvent{Type: types.EventPolicyEvaluated, Data: map[string]string{"allowed": "true"}},
+			"Policy evaluated: true",
+		},
+		{
+			"policy evaluated no data",
+			types.TraceEvent{Type: types.EventPolicyEvaluated, Data: map[string]string{}},
+			"Policy evaluated",
+		},
+		{
+			"action denied with reason",
+			types.TraceEvent{Type: types.EventActionDenied, Data: map[string]string{"reason": "forbidden"}},
+			"Action denied: forbidden",
+		},
+		{
+			"action denied no reason",
+			types.TraceEvent{Type: types.EventActionDenied, Data: map[string]string{}},
+			"Action denied",
+		},
+		{
+			"action executed",
+			types.TraceEvent{Type: types.EventActionExecuted},
+			"Action executed",
+		},
+		{
+			"action failed with error",
+			types.TraceEvent{Type: types.EventActionFailed, Data: map[string]string{"error": "timeout"}},
+			"Action failed: timeout",
+		},
+		{
+			"action failed no error",
+			types.TraceEvent{Type: types.EventActionFailed, Data: map[string]string{}},
+			"Action failed",
+		},
+		{
+			"unknown event type",
+			types.TraceEvent{Type: "custom.event"},
+			"custom.event",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := detailForEvent(tt.event)
+			if !strings.Contains(got, tt.contains) {
+				t.Errorf("detailForEvent() = %q, want containing %q", got, tt.contains)
+			}
+		})
 	}
 }
 
