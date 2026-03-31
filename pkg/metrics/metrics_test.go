@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -147,6 +148,50 @@ func TestAPIRequestsCounter(t *testing.T) {
 	if got := m.GetCounter().GetValue(); got != 1 {
 		t.Errorf("APIRequests(POST, /sandboxes, 201) = %v, want 1", got)
 	}
+}
+
+func TestInit(t *testing.T) {
+	// Init registers all metrics with the default Prometheus registry via sync.Once.
+	// Reset the once so Init actually runs in this test.
+	once = sync.Once{}
+
+	// Replace metrics with fresh instances to avoid double-registration panics.
+	SandboxesActive = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "agentsandbox_sandboxes_active_init",
+		Help: "Number of currently active sandboxes",
+	})
+	ActionsTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "agentsandbox_actions_total_init",
+		Help: "Total actions executed",
+	}, []string{"action_type", "effect"})
+	ActionDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name: "agentsandbox_action_duration_seconds_init",
+		Help: "Action execution duration",
+		Buckets: prometheus.DefBuckets,
+	}, []string{"action_type"})
+	PolicyEvaluations = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "agentsandbox_policy_evaluations_total_init",
+		Help: "Total policy evaluations",
+	}, []string{"effect"})
+	APIRequests = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "agentsandbox_api_requests_total_init",
+		Help: "Total API requests",
+	}, []string{"method", "path", "status"})
+	APILatency = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name: "agentsandbox_api_latency_seconds_init",
+		Help: "API request latency",
+		Buckets: prometheus.DefBuckets,
+	}, []string{"method", "path"})
+
+	// Should not panic.
+	Init()
+}
+
+func TestInitIdempotent(t *testing.T) {
+	// Calling Init() multiple times should be safe due to sync.Once.
+	// After TestInit, once is already done, so this is a no-op — no panic.
+	Init()
+	Init()
 }
 
 func TestAPILatencyHistogram(t *testing.T) {
